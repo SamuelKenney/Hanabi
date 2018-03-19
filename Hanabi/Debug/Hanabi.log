@@ -1,5 +1,15 @@
-﻿Build started 3/18/2018 9:16:57 PM.
+﻿Build started 3/19/2018 5:11:11 PM.
+     1>Project "C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Spring2018-SrYear\AI\Hanabi\Hanabi\Hanabi.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Hanabi.cpp
+         Hanabi.cpp
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(111): warning C4018: '<' : signed/unsigned mismatch
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Spring2018-SrYear\AI\Hanabi\Debug\Hanabi.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Spring2018-SrYear\AI\Hanabi\Debug\Hanabi.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Spring2018-SrYear\AI\Hanabi\Debug\Hanabi.lib" /MACHINE:X86 Debug\Hanabi.obj
+         Debug\stdafx.obj
+         Hanabi.vcxproj -> C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Spring2018-SrYear\AI\Hanabi\Debug\Hanabi.exe
+     1>Done Building Project "C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Spring2018-SrYear\AI\Hanabi\Hanabi\Hanabi.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.07
+Time Elapsed 00:00:03.21
