@@ -30,7 +30,7 @@ protected:
 	// deck that holds every possible card
 	std::map<int, std::list<int>> deck;
 	// map that holds the tableu
-	std::map<int, std::list<int>> tableu;
+	std::vector<int>tableu;
 	// discard pile
 	std::vector<Card> discardPile;
 
@@ -79,13 +79,6 @@ Player::Player()
 	playerHand[2] = deck; //Position 2
 	playerHand[3] = deck; //Position 3
 	playerHand[4] = deck; //Position 4
-
-	std::list<int> empty;
-	tableu[0] = empty;
-	tableu[1] = empty;
-	tableu[2] = empty;
-	tableu[3] = empty;
-	tableu[4] = empty;
 }
 
 Player::Player(const Player& p)
@@ -128,7 +121,7 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			}
 
 			// push card onto the tableu when it is a valid move
-			tableu.at(pe->c.color).push_back(pe->c.number); 
+			tableu = board;
 
 			// first  red                   green                blue
 			// <0 < 0 <1 1 1 2 2 3 3 4 4 5> 1 <1 1 1 2 2 3 3 4 4 5> ... > > >
