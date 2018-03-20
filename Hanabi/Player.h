@@ -17,6 +17,8 @@ using std::endl;
 #define PLAYER_H
 
 
+
+
 class Player
 {
 public:
@@ -24,15 +26,21 @@ public:
 	Player(const Player& p);
 	void tell(Event* e, vector<int> board, int hints, int fuses, vector<Card> oHand, int deckSize);
 	Event* ask();
+
+	bool contains(int in);
 protected:
 	// players hand that holds every possible card
 	std::map<int, std::map<int, std::list<int>>> playerHand;
 	// deck that holds every possible card
 	std::map<int, std::list<int>> deck;
-	// map that holds the tableu
-	std::vector<int>tableu;
+	// map that holds the tableau
+	std::vector<int>tableau;
 	// discard pile
 	std::vector<Card> discardPile;
+
+	std::vector<int> pastColorHintMoves;
+	std::vector<int> pastNumberHintMoves;
+
 
 	// elements for the Knowledge base
 	int hints;
@@ -90,14 +98,16 @@ Player::Player(const Player& p)
 
 	playerHand = p.playerHand;
 	deck = p.deck;
-	tableu = p.tableu;
+	tableau = p.tableau;
 	discardPile = p.discardPile;
+	pastColorHintMoves = p.pastColorHintMoves;
+	pastNumberHintMoves = p.pastNumberHintMoves;
 }
 
 void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card> oHand, int deckSize)
 {
 	// ============================================================================================
-	// =======This function will store the events and their results into the knowledge base========
+	// ========This function will store the events and the results into the knowledge base=========
 	// ============================================================================================
 
 	// go through deck and remove each instance of possible card from the deck from other Player's card
@@ -120,8 +130,8 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 				playerHand.at(pe->position) = deck; // cards that are left over in the deck, not all 50 cards
 			}
 
-			// push card onto the tableu when it is a valid move
-			tableu = board;
+			// push card onto the tableau when it is a valid move
+			tableau = board;
 
 			// first  red                   green                blue
 			// <0 < 0 <1 1 1 2 2 3 3 4 4 5> 1 <1 1 1 2 2 3 3 4 4 5> ... > > >
@@ -289,49 +299,17 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 
 Event* Player::ask()
 {
-	/*
-	std::vector<int> foo;
-	foo.push_back(0);
-	foo.push_back(1);
-	foo.push_back(2);
-	ColorHintEvent* color = new ColorHintEvent(foo, 0); //should remove all non-red cards from first, second, and third, card
-	*/
-	//Event* foo = new Event();
-	//return foo;
 
-	srand (time(NULL));
+	// ============================================================================================
+	// ==========This function will figure out the next best move to be made by the player=========
+	// ============================================================================================
 
-	int choice = rand()%100;
-
-	if (choice > 50){
-		std::vector<int> foo;
-		foo.push_back(0);
-		foo.push_back(1);
-		foo.push_back(2);
-		foo.push_back(3);
-		foo.push_back(4);
-		NumberHintEvent* number = new NumberHintEvent(foo, 2); //should remove all non-red cards from first, second, and third, card
-		return number;
-	} else {
-
-		PlayEvent* play = new PlayEvent(0);
-		return play;
-	}
 	/*
 	 What do I have in my knowledge base to make a decision?
 		- Player's Hand: or what could be
 		- Deck: Cards left in the deck
-		- Tableu: cards played to win the game
+		- Tableau: cards played to win the game
 		- Discard Pile: cards that have been discarded or poorly played
-
-		-// players hand that holds every possible card
-	std::map<int, std::map<int, std::list<int>>> playerHand;
-	// deck that holds every possible card
-	std::map<int, std::list<int>> deck;
-	// map that holds the tableu
-	std::map<int, std::list<int>> tableu;
-	// discard pile
-	std::vector<Card> discardPile;
 
 	// elements for the Knowledge base
 	int hints;
@@ -339,9 +317,134 @@ Event* Player::ask()
 	// easily can store other hand
 	vector<Card> oHand;
 	int deckSize;
-
 	*/
 
+	// The following hold each of the instantiations of the Event class with all needed arguments
+	// Copy and paste from here to each decision made
+	/*
+	int card = 0;
+	ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), card);
+	return colorEvent;
+
+	int number = 1;
+	NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), number);
+	return numberEvent;
+
+	int index = 0;
+	PlayEvent* playEvent = new PlayEvent(index);
+	return playEvent;
+
+	int indexDis = 0;
+	DiscardEvent* discardEvent = new DiscardEvent(indexDis);
+	return discardEvent;
+	*/
+
+	srand (time(NULL));
+	int choice = rand()%10;
+
+	/* 
+	Three main moves
+		1. Give a hint -- based on other player's hand
+
+		2. Play a card -- based on what we know about our hand
+
+		3. Discard a card -- based on what we know about our hand
+	*/
+
+	// if the probabilty of giving a hint is high -- if all fuses, 80% chance of giving hint
+	if ( choice <= hints){
+		// if lots of same color - give that
+		vector <int> colors;
+		colors.resize(5);
+		for (int i = 0; i < oHand.size(); i++)
+		{
+			switch (oHand[i].color)
+			{
+			// figure out the most seen color
+			case 0:
+				colors[0]++;
+				break;
+			case 1:
+				colors[1]++;
+				break;
+			case 2:
+				colors[2]++;
+				break;
+			case 3:
+				colors[3]++;
+				break;
+			case 4:
+				colors[4]++;
+				break;
+			}
+		}
+		int colorHigh = 0, colorIn = 0;
+		for (int i = 0; i < colors.size(); i++)
+		{
+			if (colors[i] > colorHigh){
+				colorHigh = colors[i]; 
+				colorIn = i; // sets the index to be whatever the color most seen is
+			}
+		}
+		
+		// if lots of same number - give that
+		vector <int> numbers;
+		numbers.resize(5);
+		for (int i = 0; i < oHand.size(); i++)
+		{
+			switch (oHand[i].number)
+			{
+			// figure out the most seen number
+			case 0:
+				numbers[0]++;
+				break;
+			case 1:
+				numbers[1]++;
+				break;
+			case 2:
+				numbers[2]++;
+				break;
+			case 3:
+				numbers[3]++;
+				break;
+			case 4:
+				numbers[4]++;
+				break;
+			}
+		}
+		int numberHigh = 0, numberIn = 0;
+		for (int i = 0; i < numbers.size(); i++)
+		{
+			if (numbers[i] > numberHigh){ // only keep track of last 5 hints
+				numberHigh = numbers[i]; 
+				numberIn = i; // sets the index to be whatever the color most seen is
+			}
+		}
+
+		// returns an Event that has the most hints
+		if (numberHigh > colorHigh){
+			// keep track of last Number Hint
+			if (pastNumberHintMoves.size() == 5){
+				pastNumberHintMoves.pop_back();
+			}
+			pastNumberHintMoves.push_back(numberIn);
+			
+			NumberHintEvent* colorEvent = new NumberHintEvent(vector<int>(), numberIn);
+			return colorEvent;
+		} else {
+			// keep track of last Color Hint
+			if (pastColorHintMoves.size() == 5){ // only keep track of last 5 hints
+				pastColorHintMoves.pop_back();
+			}
+			pastColorHintMoves.push_back(colorIn);
+			ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), colorIn);
+			return colorEvent;
+		}
+		
+		// if a 1 of any color - give that
+		
+
+	}
 
 
 	/*  You must produce an event of the appropriate type. Not all member
@@ -357,5 +460,14 @@ Event* Player::ask()
 			DiscardEvent - you must declare the index to be discarded; no other
 				member variables necessary.
 	*/
+}
+
+bool Player::contains(int in){
+	for (int i = 0; i < pastColorHintMoves.size(); i++)
+	{
+		if (pastColorHintMoves[i] == in)
+			return true;
+	}
+	return false;
 }
 #endif
