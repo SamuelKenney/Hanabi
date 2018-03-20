@@ -48,6 +48,16 @@ protected:
 	// easily can store other hand
 	vector<Card> oHand;
 	int deckSize;
+
+	vector<std::pair<bool, bool>> hintedAt;
+	vector<std::pair<bool, bool>> playerHintedAtStored;
+
+	bool canBePlayed(Card c);
+	bool numberCanBePlayed(int n);
+	void playerHintedAt();
+	Card cardPlay();
+
+	int turns;
 };
 
 Player::Player()
@@ -87,6 +97,23 @@ Player::Player()
 	playerHand[2] = deck; //Position 2
 	playerHand[3] = deck; //Position 3
 	playerHand[4] = deck; //Position 4
+
+													// color, number
+	std::pair<bool, bool> pos0 = std::pair<bool, bool>(false, false);
+	std::pair<bool, bool> pos1 = std::pair<bool, bool>(false, false);
+	std::pair<bool, bool> pos2 = std::pair<bool, bool>(false, false);
+	std::pair<bool, bool> pos3 = std::pair<bool, bool>(false, false);
+	std::pair<bool, bool>pos4 = std::pair<bool, bool>(false, false);
+
+	hintedAt.push_back(pos0);
+	hintedAt.push_back(pos1);
+	hintedAt.push_back(pos2);
+	hintedAt.push_back(pos3);
+	hintedAt.push_back(pos4);
+
+	playerHintedAtStored.resize(5);
+
+	turns = 0;
 }
 
 Player::Player(const Player& p)
@@ -102,6 +129,9 @@ Player::Player(const Player& p)
 	discardPile = p.discardPile;
 	pastColorHintMoves = p.pastColorHintMoves;
 	pastNumberHintMoves = p.pastNumberHintMoves;
+
+	hintedAt = p.hintedAt;
+	turns = p.turns;
 }
 
 void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card> oHand, int deckSize)
@@ -226,8 +256,10 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			{
 				// for each color not in hint, remove from the map
 				// grab the position of the index specified in indices at i
-				if (j != ce->color)
+				if (j != ce->color){
 					playerHand.at(ce->indices.at(i)).at(j).clear();
+					hintedAt[i].first = true; // hand at this position has been hinted a color
+				}
 			}
 		}
 	}
@@ -241,8 +273,9 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			if (!playerHand.at(i).empty() && !playerHand.at(i).at(dre->drawnCard.color).empty()){
 				// Removes the card from the map that holds the deck
 				std::list<int>::iterator it = std::find(playerHand.at(i).at(dre->drawnCard.color).begin(), playerHand.at(i).at(dre->drawnCard.color).end(), dre->drawnCard.number);
-				if (it != playerHand.at(i).at(dre->drawnCard.color).end())
-					playerHand.at(i).at(dre->drawnCard.color).erase(it);		
+				if (it != playerHand.at(i).at(dre->drawnCard.color).end()){
+					playerHand.at(i).at(dre->drawnCard.color).erase(it);
+				}
 			}
 		}
 
@@ -257,7 +290,6 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 
 		for (int i = 0; i < ne->indices.size(); i++)
 		{
-			// <0, 2, 4> are blue
 			// first  red                   green                blue
 			// <0 < 0 <1 1 1 2 2 3 3 4 4 5> 1 <1 1 1 2 2 3 3 4 4 5> ... > > >
 			for (int j = 0; j < playerHand.at(i).size(); j++)
@@ -265,6 +297,7 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 				// grab the position of the index specified in indices at i
 				playerHand.at(ne->indices.at(i)).at(j).clear();
 				playerHand.at(ne->indices.at(i)).at(j).push_back(ne->number);
+				hintedAt[i].second = true; // hand at this position has been hinted a number
 			}
 		}
 	}
@@ -338,116 +371,107 @@ Event* Player::ask()
 	DiscardEvent* discardEvent = new DiscardEvent(indexDis);
 	return discardEvent;
 	*/
+	
+	//1 Save Hint
+	if (turns > 5){ // wait till second stage of game
+		for (int i = 0; i < hintedAt.size(); i++)
+		{
+			if (!hintedAt[i].first && !hintedAt[i].second){ // if both false, high chance of discard
+				// TODO:
+			}
+		}
+	}
+	playerHintedAt();
+	cardPlay();
+
+
+	//2 Good play
+	
+	//3 Bad play
+
+	//4 Play Hint
+
+	//5 Discard
+
+	turns++;
+
+
+
+
+
+
+
+
+
+
+
+
+
+	PlayEvent* playEvent = new PlayEvent(0);
+	return playEvent;
+
+
+
+
+
+
+
+
+	
+	/*
+
 
 	srand (time(NULL));
 	int choice = rand()%10;
 
-	/* 
+	
 	Three main moves
 		1. Give a hint -- based on other player's hand
+			- if hint given, go through and update which cards have been hinted
+			- if they have been hinted, do not hint color or number again
+			- if 1 white, find 2 or white
+			- if 3 blue, find 4 or blue
 
 		2. Play a card -- based on what we know about our hand
+			- go through, if there are any ones and are playable, play them 
 
 		3. Discard a card -- based on what we know about our hand
-	*/
 
-	// if the probabilty of giving a hint is high -- if all fuses, 80% chance of giving hint
-	if ( choice <= hints){
-		// if lots of same color - give that
-		vector <int> colors;
-		colors.resize(5);
-		for (int i = 0; i < oHand.size(); i++)
-		{
-			switch (oHand[i].color)
-			{
-			// figure out the most seen color
-			case 0:
-				colors[0]++;
-				break;
-			case 1:
-				colors[1]++;
-				break;
-			case 2:
-				colors[2]++;
-				break;
-			case 3:
-				colors[3]++;
-				break;
-			case 4:
-				colors[4]++;
-				break;
-			}
-		}
-		int colorHigh = 0, colorIn = 0;
-		for (int i = 0; i < colors.size(); i++)
-		{
-			if (colors[i] > colorHigh){
-				colorHigh = colors[i]; 
-				colorIn = i; // sets the index to be whatever the color most seen is
-			}
-		}
-		
-		// if lots of same number - give that
-		vector <int> numbers;
-		numbers.resize(5);
-		for (int i = 0; i < oHand.size(); i++)
-		{
-			switch (oHand[i].number)
-			{
-			// figure out the most seen number
-			case 0:
-				numbers[0]++;
-				break;
-			case 1:
-				numbers[1]++;
-				break;
-			case 2:
-				numbers[2]++;
-				break;
-			case 3:
-				numbers[3]++;
-				break;
-			case 4:
-				numbers[4]++;
-				break;
-			}
-		}
-		int numberHigh = 0, numberIn = 0;
-		for (int i = 0; i < numbers.size(); i++)
-		{
-			if (numbers[i] > numberHigh){ // only keep track of last 5 hints
-				numberHigh = numbers[i]; 
-				numberIn = i; // sets the index to be whatever the color most seen is
-			}
-		}
+	
 
-		// returns an Event that has the most hints
-		if (numberHigh > colorHigh){
-			// keep track of last Number Hint
-			if (pastNumberHintMoves.size() == 5){
-				pastNumberHintMoves.pop_back();
+	// at all times, and in all places, play a 1
+	for (int i = 0; i < playerHand.size(); i++)
+	{
+		// first  red                   green                blue
+		// <0 < 0 <1 1 1 2 2 3 3 4 4 5> 1 <1 1 1 2 2 3 3 4 4 5> ... > > >
+		for (int j = 0; j < playerHand.at(i).size(); j++)
+		{
+			if (playerHand.at(i).at(j).size() == 1){
+				if (playerHand.at(i).at(j).front() == 1){
+					PlayEvent* playEvent = new PlayEvent(i);
+					return playEvent;
+				}
 			}
-			pastNumberHintMoves.push_back(numberIn);
-			
-			NumberHintEvent* colorEvent = new NumberHintEvent(vector<int>(), numberIn);
-			return colorEvent;
-		} else {
-			// keep track of last Color Hint
-			if (pastColorHintMoves.size() == 5){ // only keep track of last 5 hints
-				pastColorHintMoves.pop_back();
-			}
-			pastColorHintMoves.push_back(colorIn);
-			ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), colorIn);
-			return colorEvent;
 		}
-		
-		// if a 1 of any color - give that
-		
 
 	}
+	
 
+	
+	// maybe do some sort of check on if there are ones
+	// and then if there are any ones played, look for twos etc.
+	// if there are any played on the board, look for that color
 
-	/*  You must produce an event of the appropriate type. Not all member
+	// make hints based on the tableau and what you want on it
+	for (int i = 0; i < oHand.size(); i++)
+	{
+		if (oHand[i].number == 1 && hintedAt[i].second != true){
+			NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), 1);
+			return numberEvent;
+		}
+	}
+
+	  You must produce an event of the appropriate type. Not all member
 		variables of a given event type need to be filled in; some will be
 		ignored even if they are. Summary follows.
 		Options:
@@ -462,12 +486,98 @@ Event* Player::ask()
 	*/
 }
 
-bool Player::contains(int in){
-	for (int i = 0; i < pastColorHintMoves.size(); i++)
+bool Player::canBePlayed(Card c){
+	// goes to specific spot in tableau and if the played card is one lower than possible played card, return true
+	if (tableau[c.color] == c.number--)
+		return true;
+		
+	return false;
+}
+bool Player::numberCanBePlayed(int n){
+	// goes through tableau and if there is a value anywhere that the number can be played on, it returns true
+	for (int i = 0; i < tableau.size(); i++)
 	{
-		if (pastColorHintMoves[i] == in)
+		if (tableau[i] == n--)
 			return true;
 	}
+
 	return false;
+}
+
+Card Player::cardPlay(){
+	int cols = 0;
+	int in = 0;
+
+	for (int i = 0; i < playerHand.size(); i++)
+	{
+		cols = 0;
+		// check if the color is known
+		for (int j = 0; j < playerHand.at(i).size(); j++)
+		{
+			if (playerHand.at(i).at(j).empty()){
+				cols++;
+			}
+		}
+		if (cols == 4){ // if color has been known, store which card is known
+			in = i;
+		}
+	}
+
+	// sentinel values for if there is no card to be played
+	int color = -1;
+	int number = -1;
+	// go through the card that has a known color
+	for (int j = 0; j < playerHand.at(in).size(); j++)
+	{
+		if (playerHand.at(in).at(j).size() == 1){
+			color = j;
+			number = playerHand.at(in).at(j).front();
+		}
+	}
+
+	Card c = Card(color, number); // return card that is playable since color and number is known at the same time
+	return c;
+}
+void Player::playerHintedAt(){
+	// updates vector of pairs that let the player know what parts of their hand have been hinted at
+	// Possible values are of the form (color, number) which could be FF, FT, TF, or TT
+
+	int cols = 0;
+	int nums = 0;
+
+	bool colorHinted = false;
+	bool numberHinted = false;
+
+	for (int i = 0; i < playerHand.size(); i++)
+	{
+		cols = 0;
+		colorHinted = false;
+	    numberHinted = false;
+
+		// check if the color is known
+		for (int j = 0; j < playerHand.at(i).size(); j++)
+		{
+			if (playerHand.at(i).at(j).empty()){
+				cols++;
+			}
+		}
+		if (cols == 4){ // color has been hinted
+			colorHinted = true;
+		}
+		// check if the color is known
+		for (int j = 0; j < playerHand.at(i).size(); j++)
+		{
+			if (playerHand.at(i).at(j).size() == 1){
+				nums++;
+			}
+		}
+		if (nums == 1 || nums == 5){
+			numberHinted = true;
+		}
+
+		// keep track of each hand whether that be FF, TF, FT, or TT
+		std::pair<bool, bool> temp = std::pair<bool, bool>(colorHinted, numberHinted);
+		playerHintedAtStored[i] = temp;
+	}
 }
 #endif
