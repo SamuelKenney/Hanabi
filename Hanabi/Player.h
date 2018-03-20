@@ -53,8 +53,13 @@ protected:
 	vector<std::pair<bool, bool>> playerHintedAtStored;
 
 	bool canBePlayed(Card c);
+	int chooseDiscard(bool uncertain=false);
 	bool numberCanBePlayed(int n);
 	void playerHintedAt();
+
+	int getCardColor(int index);
+	int getCardNumber(int index);
+
 	Card cardPlay();
 
 	int turns;
@@ -387,24 +392,23 @@ Event* Player::ask()
 
 	//2 Good play
 	
+		/* Looking at every card in MY hand */
+		// If fully known card, discard (if hints < 8) or play accordingly
+
 	//3 Bad play
+		// If number known & playable, play it
+		// Perhaps play the rarest card possible? eg play a 5 over a 3
+		// If only color known, skip it
 
 	//4 Play Hint
+		/* Looking at every PLAYABLE card in THEIR hand */
+		// Hint at the number of the card in the smallest group
+			// Eg if there is a playable 1 and 2, but there are more 1's than 2's, hint the 2
 
 	//5 Discard
+		
 
 	turns++;
-
-
-
-
-
-
-
-
-
-
-
 
 
 	PlayEvent* playEvent = new PlayEvent(0);
@@ -538,6 +542,76 @@ Card Player::cardPlay(){
 	Card c = Card(color, number); // return card that is playable since color and number is known at the same time
 	return c;
 }
+
+/// Returns the index of the best card to discard
+///	if uncertain = true than 
+int Player::chooseDiscard(bool uncertain = false) {
+	// This case is assuming we have already discarded any obvious discards
+	/* Looking a the cards in order of least information known first */
+	
+	// Any known safe discard
+	playerHintedAt();
+	for (int i = 0; i < hintedAt.size(); i++)
+	{
+		// if we know the card and it can't be played
+		// TODO: Consider if the card is numbered, but we cannot play it
+		if (hintedAt[i].first && hintedAt[i].second
+			&& (tableau[i] >= getCardNumber(i)) {
+			return i;
+		}
+
+		// 1. Any color xor number we know to be 'used up'
+	}
+
+	// Uncertain discards
+	if (uncertain) {
+		
+		// 2. Unknown
+		// 3. Color Known
+		// 4. Number Known
+	}
+	
+}
+
+/// Returns the color of the card if it is definite, returns -1 otherwise
+int Player::getCardColor(int card) {
+	// Sentinel value
+	int color = -1;
+	int cols = 0;
+
+	// check if the color is known
+	for (int j = 0; j < playerHand.at(card).size(); j++)
+	{
+		if (playerHand.at(card).at(j).empty()) {
+			cols++;
+		}
+		else {
+			color = j;
+		}
+	}
+	if (cols == 4) { // color has been hinted
+		return color;
+	} else {
+		return -1;
+	}
+}
+
+/// Returns the number of the card if it is definite, returns -1 otherwise
+int Player::getCardNumber(int card) {
+	// Sentinel value
+	int num = -1;
+
+	for (int i = 0; i < playerHand.at(card).size(); i++)
+	{
+		if (playerHand.at(card).at(i).size() != 1) {
+			return -1;
+		}
+	}
+	return playerHand.at(card).at(0).front;
+}
+
+
+
 void Player::playerHintedAt(){
 	// updates vector of pairs that let the player know what parts of their hand have been hinted at
 	// Possible values are of the form (color, number) which could be FF, FT, TF, or TT
