@@ -53,6 +53,7 @@ protected:
 	int deckSize;
 
 	// Managing hand knowledge
+	void removePossibilityFromHand(std::map<int, std::map<int, std::list<int>>> hand, Card c);
 	void removeCardFromHand(std::map<int, std::map<int, std::list<int>>> hand, Card c);
 	void setCardHandColor(std::map<int, std::map<int, std::list<int>>> hand, int cardIndex, int color);
 	void setCardHandNumber(std::map<int, std::map<int, std::list<int>>> hand, int cardIndex, int number);
@@ -164,7 +165,7 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			tableau = board;
 
 			// need to update own hand to reflect that it is no longer an option
-			removeCardFromHand(playerHand, pe->c);
+			removePossibilityFromHand(playerHand, pe->c);
 
 			// Removes the card from the map that holds the deck
 			std::list<int>::iterator it = std::find(deck.at(pe->c.color).begin(), deck.at(pe->c.color).end(), pe->c.number);
@@ -188,8 +189,8 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			discardPile.push_back(pe->c);
 
 			// need to update own hand to reflect that it is no longer an option
-			removeCardFromHand(playerHand, pe->c);
-			removeCardFromHand(partnerHand, pe->c);
+			removePossibilityFromHand(playerHand, pe->c);
+			removePossibilityFromHand(partnerHand, pe->c);
 
 			// Removes the card from the map that holds the deck
 			std::list<int>::iterator it = std::find(deck.at(pe->c.color).begin(), deck.at(pe->c.color).end(), pe->c.number);
@@ -213,7 +214,7 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 		discardPile.push_back(de->c);
 
 		// update the players hand based on what is discarded
-		removeCardFromHand(playerHand, de->c);
+		removePossibilityFromHand(playerHand, de->c);
 
 		// Removes the card from the map that holds the deck
 		std::list<int>::iterator it = std::find(deck.at(de->c.color).begin(), deck.at(de->c.color).end(), de->c.number);
@@ -364,7 +365,7 @@ Event* Player::ask()
 	turns++;
 }
 
-void Player::removeCardFromHand(std::map<int, std::map<int, std::list<int>>> hand, Card c)
+void Player::removePossibilityFromHand(std::map<int, std::map<int, std::list<int>>> hand, Card c)
 {
 	for (int i = 0; i < hand.size(); i++)
 	{
@@ -375,6 +376,24 @@ void Player::removeCardFromHand(std::map<int, std::map<int, std::list<int>>> han
 				hand.at(i).at(c.color).erase(it);
 		}
 	}
+}
+
+void Player::removeCardFromHand(std::map<int, std::map<int, std::list<int>>> hand, Card c)
+{
+	std::map<int, std::map<int, std::list<int>>> temp;
+	int count = 0;
+	for (int i = 0; i < playerHand.size(); i++)
+	{
+		if (i != pe->position) {
+			temp[count] = playerHand[i];
+		}
+		else {
+			count--;
+		}
+		count++;
+	}
+	temp[4] = deck;
+	playerHand = temp;
 }
 
 /// Taske a hand and sets the card to the color
