@@ -163,19 +163,8 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			// push card onto the tableau when it is a valid move
 			tableau = board;
 
-			// first  red                   green                blue
-			// <0 < 0 <1 1 1 2 2 3 3 4 4 5> 1 <1 1 1 2 2 3 3 4 4 5> ... > > >
 			// need to update own hand to reflect that it is no longer an option
-			for (int i = 0; i < playerHand.size(); i++)
-			{
-				// Removes the card from the map that holds the deck
-				if (!playerHand.at(i).empty() && !playerHand.at(i).at(pe->c.color).empty()) {
-					// Removes the card from the map that holds the deck
-					std::list<int>::iterator it = std::find(playerHand.at(i).at(pe->c.color).begin(), playerHand.at(i).at(pe->c.color).end(), pe->c.number);
-					if (it != playerHand.at(i).at(pe->c.color).end())
-						playerHand.at(i).at(pe->c.color).erase(it);
-				}
-			}
+			removeCardFromHand(playerHand, pe->c);
 
 			// Removes the card from the map that holds the deck
 			std::list<int>::iterator it = std::find(deck.at(pe->c.color).begin(), deck.at(pe->c.color).end(), pe->c.number);
