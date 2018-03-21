@@ -53,10 +53,10 @@ protected:
 	int deckSize;
 
 	// Managing hand knowledge
-	void removePossibilityFromHand(std::map<int, std::map<int, std::list<int>>> hand, Card c);
-	void removeCardFromHand(std::map<int, std::map<int, std::list<int>>> hand, Card c);
-	void setCardHandColor(std::map<int, std::map<int, std::list<int>>> hand, int cardIndex, int color);
-	void setCardHandNumber(std::map<int, std::map<int, std::list<int>>> hand, int cardIndex, int number);
+	void removePossibilityFromHand(std::map<int, std::map<int, std::list<int>>> &hand, Card c);
+	void removeCardFromHand(std::map<int, std::map<int, std::list<int>>> &hand, Card c);
+	void setCardHandColor(std::map<int, std::map<int, std::list<int>>> &hand, int cardIndex, int color);
+	void setCardHandNumber(std::map<int, std::map<int, std::list<int>>> &hand, int cardIndex, int number);
 
 	bool canBePlayed(Card c);
 	int chooseDiscard(std::map<int, std::map<int, std::list<int>>> hand, bool uncertain = false);
@@ -365,7 +365,7 @@ Event* Player::ask()
 	turns++;
 }
 
-void Player::removePossibilityFromHand(std::map<int, std::map<int, std::list<int>>> hand, Card c)
+void Player::removePossibilityFromHand(std::map<int, std::map<int, std::list<int>>> &hand, Card c)
 {
 	for (int i = 0; i < hand.size(); i++)
 	{
@@ -378,14 +378,14 @@ void Player::removePossibilityFromHand(std::map<int, std::map<int, std::list<int
 	}
 }
 
-void Player::removeCardFromHand(std::map<int, std::map<int, std::list<int>>> hand, Card c)
+void Player::removeCardFromHand(std::map<int, std::map<int, std::list<int>>> &hand, Card c)
 {
 	std::map<int, std::map<int, std::list<int>>> temp;
 	int count = 0;
-	for (int i = 0; i < playerHand.size(); i++)
+	for (int i = 0; i < hand.size(); i++)
 	{
 		if (i != pe->position) {
-			temp[count] = playerHand[i];
+			temp[count] = hand[i];
 		}
 		else {
 			count--;
@@ -393,11 +393,11 @@ void Player::removeCardFromHand(std::map<int, std::map<int, std::list<int>>> han
 		count++;
 	}
 	temp[4] = deck;
-	playerHand = temp;
+	hand = temp;
 }
 
 /// Taske a hand and sets the card to the color
-void Player::setCardHandColor(std::map<int, std::map<int, std::list<int>>> hand, int cardIndex, int color)
+void Player::setCardHandColor(std::map<int, std::map<int, std::list<int>>> &hand, int cardIndex, int color)
 {
 	for (int colorIndex = 0; colorIndex < hand.at(i).size(); colorIndex++)
 	{
@@ -409,8 +409,14 @@ void Player::setCardHandColor(std::map<int, std::map<int, std::list<int>>> hand,
 	}
 }
 
-void Player::setCardHandNumber(std::map<int, std::map<int, std::list<int>>> hand, int cardIndex, int number)
+void Player::setCardHandNumber(std::map<int, std::map<int, std::list<int>>> &hand, int cardIndex, int number)
 {
+	for (int colorIndex = 0; colorIndex < hand.at(cardIndex).size(); colorIndex++)
+	{
+		// grab the position of the index specified in indices at cardIndex
+		hand.at(cardIndex).at(colorIndex).clear();
+		hand.at(cardIndex).at(colorIndex).push_back(number);
+	}
 }
 
 /// Returns true if the card can be played
