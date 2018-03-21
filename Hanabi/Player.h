@@ -452,7 +452,7 @@ Event* Player::ask()
 
 			for (int j = 0; j < oHand.size(); j++)
 			{
-				if (oHand[j].color == oHand[i].number)
+				if (oHand[j].color == oHand[i].color)
 					hintedAt[j].first = true;
 			}
 			return colorEvent;
