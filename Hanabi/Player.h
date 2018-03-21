@@ -411,14 +411,15 @@ Event* Player::ask()
 	//1 Save Hint
 	if (turns >= 2){ // wait till second stage of game TODO:
 		int in = chooseOpponentDiscard();
+		// TODO: DO WE HAVE ANY HINTS TO SPEND!!!
 		if (in != -1){
 			if (!hintedAt[in].first && !hintedAt[in].second){ // if both false, high chance of discard
-				// TODO:
+				// TODO: PLAYED TOO MANY LAST CARDS
 				if (lastCard(oHand[in])){ // if this is the last card, give a color hint
 					ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[in].color);
 					for (int j = 0; j < oHand.size(); j++)
 					{
-						if (oHand[j].number == oHand[in].color)
+						if (oHand[j].color == oHand[in].color)
 							hintedAt[j].first = true;
 					}
 					return colorEvent;
@@ -444,14 +445,14 @@ Event* Player::ask()
 	/* Looking at every card in MY hand */
 	// If fully known card, discard (if hints < 8) or play accordingly
 
-	for (int i = 0; i < hintedAt.size(); i++)
+	for (int i = 0; i < hintedAt.size(); i++) // TODO: HINTS NEED TO NOT BE 0!!!!
 	{
 		if (hintedAt[i].second == true){
 			ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[i].color);
 
 			for (int j = 0; j < oHand.size(); j++)
 			{
-				if (oHand[j].number == oHand[i].number)
+				if (oHand[j].color == oHand[i].number)
 					hintedAt[j].first = true;
 			}
 			return colorEvent;
@@ -500,7 +501,7 @@ Event* Player::ask()
 
 				for (int j = 0; j < oHand.size(); j++)
 				{
-					if (oHand[j].number == oHand[i].number)
+					if (oHand[j].color == oHand[i].color)
 						hintedAt[j].first = true;
 				}
 				return colorEvent;
