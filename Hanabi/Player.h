@@ -66,7 +66,12 @@ protected:
 	int getCardNumber(std::map<int, std::map<int, std::list<int>>> hand, int index);
 	int getPlayableCard(std::map<int, std::map<int, std::list<int>>> hand);
 
+	vector<std::pair<bool, bool>> hintedAt;
+	vector<std::pair<bool, bool>> playerHintedAtStored;
+	
 	int turns;
+
+	void print();
 };
 
 Player::Player()
@@ -150,15 +155,36 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 	NUMBER_HINT 15
 	NO_OP 0
 	*/
-	if (currentAction == 11) {
-		PlayEvent* pe = (PlayEvent*)e;
+	if (currentAction == 11){
+		PlayEvent* pe = (PlayEvent*) e;
 		//only play card if legal
-		if (pe->legal) {
+		std::pair<bool, bool> foo = std::pair<bool, bool>(false, false);
+		if (pe->legal){
 			// take away from player hand or other hand
-			if (pe->wasItThisPlayer) {
+			if (pe->wasItThisPlayer){
 				// remove all options from this position in the players hand-- will be replaced by draw
-				playerHand.at(pe->position) = deck; // cards that are left over in the deck, not all 50 cards
 
+				// removes the card from the play, and shifts everything down
+				std::map<int,std::map<int, std::list<int>>> temp;
+				int count = 0;
+				for (int i = 0; i < playerHand.size(); i++)
+				{
+					if (i != pe->position){
+						temp[count] = playerHand[i];
+					} else {
+						count--;
+					}
+					count++;
+				}
+				temp[4] = deck;
+				playerHand = temp;
+
+				//playerHintedAt();
+				playerHintedAtStored.erase(playerHintedAtStored.begin() + pe->position);
+				playerHintedAtStored.push_back(foo);
+			} else {
+				hintedAt.erase(hintedAt.begin() + pe->position);
+				hintedAt.push_back(foo);
 			}
 
 			// push card onto the tableau when it is a valid move
@@ -179,10 +205,27 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			// if it is not a legal move, needs to be discarded
 
 			// take away from player hand or other hand
-			if (pe->wasItThisPlayer) {
-				// remove all options from this position in the players hand-- will be replaced by draw
-				playerHand.at(pe->position) = deck;
-
+			if (pe->wasItThisPlayer){
+				// removes the card from the play, and shifts everything down
+				std::map<int,std::map<int, std::list<int>>> temp;
+				int count = 0;
+				for (int i = 0; i < playerHand.size(); i++)
+				{
+					if (i != pe->position){
+						temp[count] = playerHand[i];
+					} else {
+						count--;
+					}
+					count++;
+				}
+				temp[4] = deck;
+				playerHand = temp;
+				
+				playerHintedAtStored.erase(playerHintedAtStored.begin() + pe->position);
+				playerHintedAtStored.push_back(foo);
+			} else {
+				hintedAt.erase(hintedAt.begin() + pe->position);
+				hintedAt.push_back(foo);
 			}
 
 			//add discarded card to the pile
@@ -203,13 +246,30 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 		DiscardEvent* de = (DiscardEvent*)e;
 		// depending on who it is, the card is removed from the hand and the deck
 		std::pair<bool, bool> foo = std::pair<bool, bool>(false, false);
-		if (de->wasItThisPlayer) {
-			// remove all options from this position in the players hand-- will be replaced by draw
-			for (int i = 0; i < playerHand.at(de->position).size(); i++)
+		if (de->wasItThisPlayer){
+			// removes the card from the play, and shifts everything down
+			std::map<int,std::map<int, std::list<int>>> temp;
+			int count = 0;
+			for (int i = 0; i < playerHand.size(); i++)
 			{
-				//playerHand.at(de->position).at(i).clear();
+				if (i != de->position){
+					temp[count] = playerHand[i];
+				} else {
+					count--;
+				}
+				count++;
 			}
+			temp[4] = deck;
+			playerHand = temp;
+
+			//playerHintedAt();
+			playerHintedAtStored.erase(playerHintedAtStored.begin() + de->position);
+			playerHintedAtStored.push_back(foo);
+		} else {
+			hintedAt.erase(hintedAt.begin() + de->position);
+			hintedAt.push_back(foo);
 		}
+
 		// add discarded card to the pile
 		discardPile.push_back(de->c);
 
@@ -251,8 +311,23 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 		if (it != deck.at(dre->drawnCard.color).end())
 			deck.at(dre->drawnCard.color).erase(it);
 	}
-	else if (currentAction == 15) {
-		NumberHintEvent* ne = (NumberHintEvent*)e;
+	else if (currentAction == 15){
+		NumberHintEvent* ne = (NumberHintEvent*) e;
+		std::list<int> choosen;
+		if (ne->number == 1){ // if 1, push back three
+			for (int i = 0; i < 3; i++)
+			{
+				choosen.push_back(ne->number);
+			}
+		}
+		else if (ne->number == 5){ // if 5
+			choosen.push_back(ne->number);
+		} else { // if 2, 3, or 4 push back two
+			choosen.push_back(ne->number);
+			choosen.push_back(ne->number);
+		}
+
+
 
 		for (int i = 0; i < ne->indices.size(); i++)
 		{
@@ -261,13 +336,12 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			for (int j = 0; j < playerHand.at(i).size(); j++)
 			{
 				// grab the position of the index specified in indices at i
-				playerHand.at(ne->indices.at(i)).at(j).clear();
-				playerHand.at(ne->indices.at(i)).at(j).push_back(ne->number);
+				playerHand.at(ne->indices.at(i)).at(j) = choosen; // set the new vector there to be the possible options
 			}
 			playerHintedAtStored[ne->indices.at(i)].second = true; // hand at this position has been hinted a number
 		}
 	}
-	else if (currentAction == 0) {
+	else if (currentAction == 0){
 		// TODO: Probably nothing
 	}
 
@@ -286,19 +360,27 @@ Event* Player::ask()
 	// ==========This function will figure out the next best move to be made by the player=========
 	// ============================================================================================
 
+	print();
 	// needs to be called every time to update values based on hints
-	playerHintedAt();
-
+	//playerHintedAt();
+	
+	turns++;
 
 	bool hint = true;
 	//1 Save Hint
-	if (turns >= 4) { // wait till second stage of game TODO:
-		int in = chooseDiscard(partnerHand);
-		if (in != -1) {
-			if (!hintedAt[in].first && !hintedAt[in].second) { // if both false, high chance of discard
-				// TODO:
-				if (lastCard(oHand[in])) { // if this is the last card, give a color hint
+	if (turns >= 2){ // wait till second stage of game TODO:
+		int in = chooseOpponentDiscard();
+		// TODO: DO WE HAVE ANY HINTS TO SPEND!!!
+		if (in != -1){
+			if (!hintedAt[in].first && !hintedAt[in].second){ // if both false, high chance of discard
+				// TODO: PLAYED TOO MANY LAST CARDS
+				if (lastCard(oHand[in])){ // if this is the last card, give a color hint
 					ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[in].color);
+					for (int j = 0; j < oHand.size(); j++)
+					{
+						if (oHand[j].color == oHand[in].color)
+							hintedAt[j].first = true;
+					}
 					return colorEvent;
 				}
 			}
@@ -319,7 +401,36 @@ Event* Player::ask()
 		PlayEvent* playEvent = new PlayEvent(c); // if a real card that can be played, play it
 		return playEvent;
 	}
+	/* Looking at every card in MY hand */
+	// If fully known card, discard (if hints < 8) or play accordingly
 
+	for (int i = 0; i < hintedAt.size(); i++) // TODO: HINTS NEED TO NOT BE 0!!!!
+	{
+		if (hintedAt[i].second == true){
+			ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[i].color);
+
+			for (int j = 0; j < oHand.size(); j++)
+			{
+				if (oHand[j].color == oHand[i].color)
+					hintedAt[j].first = true;
+			}
+			return colorEvent;
+		}
+
+	}
+
+	//3 Uncertain play
+		// If number known & playable, play it
+		// Perhaps play the rarest card possible? eg play a 5 over a 3
+		// If only color known, skip it
+	for (int i = 0; i < playerHand.size(); i++)
+	{
+		int num = getCardNumber(i);
+		if (numberCanBePlayed(num)){
+			PlayEvent* playEvent = new PlayEvent(i); // if a real card that can be played, play it
+			return playEvent;
+		}
+	}
 
 	//4 Play Hint
 		/* Looking at every PLAYABLE card in THEIR hand */
@@ -341,28 +452,30 @@ Event* Player::ask()
 		}
 	}
 
-	if (hints == 8) {
-		for (int i = 0; i < playerHintedAtStored.size(); i++)
+	if (hints == 8){
+		for (int i = 0; i < hintedAt.size(); i++)
 		{
-			if (playerHintedAtStored[i].second == true) {
+			if (hintedAt[i].second == true){
 				ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[i].color);
+
+				for (int j = 0; j < oHand.size(); j++)
+				{
+					if (oHand[j].color == oHand[i].color)
+						hintedAt[j].first = true;
+				}
 				return colorEvent;
 			}
 
 		}
-		ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[0].color);
-		return colorEvent;
-
-	}
-	else {
+	} else {
 		//5 Discard
-		DiscardEvent* discardEvent = new DiscardEvent(chooseDiscard(playerHand, true));
+		DiscardEvent* discardEvent = new DiscardEvent(chooseDiscard(true));
 		return discardEvent;
 	}
+	
+	
 
-
-
-	turns++;
+	
 }
 
 void Player::removePossibilityFromHand(std::map<int, std::map<int, std::list<int>>> &hand, Card c)
@@ -406,6 +519,7 @@ void Player::setCardHandColor(std::map<int, std::map<int, std::list<int>>> &hand
 		if (colorIndex != color) {
 			hand.at(cardIndex).at(colorIndex).clear();
 		}
+		playerHintedAtStored[cardIndex].first = true; // hand at this position has been hinted a number
 	}
 }
 
@@ -581,16 +695,165 @@ int Player::getCardNumber(std::map<int, std::map<int, std::list<int>>> hand, int
 	// Sentinel value
 	int num = -1;
 
-	for (int i = 0; i < hand.at(card).size(); i++)
-	{
-		if (hand.at(card).at(i).size() != 1) {
-			return -1;
+	// TODO: not used right now
+	//for (int i = 0; i < playerHand.at(card).size(); i++)
+	//{
+	//	for (auto v : playerHand.at(card).at(i))
+	//	{
+	//		if (numberCanBePlayed(v))
+	//			return v;
+	//	}
+	//}
+
+	for (int i = 0; i < playerHand.at(card).size(); i++){
+		bool same = true;
+		std::list<int> test = playerHand.at(card).at(i);
+
+		if (!test.empty()){
+			int prev = test.front();
+			for (auto v :test)
+			{
+				if (v != prev)
+					same = false;
+			}
+			if (same){
+				return prev;
+			}
 		}
 	}
-	if (!hand.at(card).at(0).empty())
-		return hand.at(card).at(0).front();
-	else
-		return -1;
+
+	return -1;
 }
 
+
+void Player::print(){
+	std::cout << "Other hints: \n";
+	for (int i = 0; i < hintedAt.size(); i++)
+	{
+		switch (i){
+		case 0:
+			std::cout << "First Card: ";
+			break;
+		case 1:
+			std::cout << "Second Card: ";
+			break;
+		case 2:
+			std::cout << "Third Card: ";
+			break;
+		case 3:
+			std::cout << "Fourth Card: ";
+			break;
+		case 4:
+			std::cout << "Fifth Card: ";
+			break;
+		}
+		switch(hintedAt[i].first){
+		case (true):
+			std::cout << "T ";
+			break;
+		case (false):
+			std::cout << "F ";
+			break;
+		}
+
+		switch(hintedAt[i].second){
+		case (true):
+			std::cout << "T ";
+			break;
+		case (false):
+			std::cout << "F ";
+			break;
+		}
+	}
+	std::cout << "\nOur hints: " << std::endl;
+	for (int i = 0; i < playerHintedAtStored.size(); i++)
+	{
+		switch (i){
+		case 0:
+			std::cout << "First Card: ";
+			break;
+		case 1:
+			std::cout << "Second Card: ";
+			break;
+		case 2:
+			std::cout << "Third Card: ";
+			break;
+		case 3:
+			std::cout << "Fourth Card: ";
+			break;
+		case 4:
+			std::cout << "Fifth Card: ";
+			break;
+		}
+		switch(playerHintedAtStored[i].first){
+		case (true):
+			std::cout << "T ";
+			break;
+		case (false):
+			std::cout << "F ";
+			break;
+		}
+
+		switch(playerHintedAtStored[i].second){
+		case (true):
+			std::cout << "T ";
+			break;
+		case (false):
+			std::cout << "F ";
+			break;
+		}
+	}
+	std::cout << std::endl;
+	std::cout << std::endl;
+	for (int i = 0; i < playerHand.size(); i++)
+	{
+		switch (i){
+		case 0:
+			std::cout << "First Card: \n";
+			break;
+		case 1:
+			std::cout << "Second Card: \n";
+			break;
+		case 2:
+			std::cout << "Third Card: \n";
+			break;
+		case 3:
+			std::cout << "Fourth Card: \n";
+			break;
+		case 4:
+			std::cout << "Fifth Card: \n";
+			break;
+		}
+		for (int j = 0; j < playerHand.at(i).size(); j++)
+		{
+			switch(j){
+			case 0:
+				std::cout << "Red: ";
+				break;
+			case 1:
+				std::cout << "Blue: ";
+				break;
+			case 2:
+				std::cout << "Green: ";
+				break;
+			case 3:
+				std::cout << "Yellow: ";
+				break;
+			case 4:
+				std::cout << "White: ";
+				break;
+			}
+			for (auto v : playerHand.at(i).at(j))
+			{
+				std::cout << v << " ";
+			}
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+}
+
+void otherPlayerHintedAt(){
+
+}
 #endif
