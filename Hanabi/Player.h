@@ -167,6 +167,9 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			if (pe->wasItThisPlayer){
 				// remove all options from this position in the players hand-- will be replaced by draw
 				playerHand.at(pe->position) = deck; // cards that are left over in the deck, not all 50 cards
+				//playerHintedAt();
+				playerHintedAtStored.erase(playerHintedAtStored.begin() + pe->position);
+				playerHintedAtStored.push_back(foo);
 			} else {
 				hintedAt.erase(hintedAt.begin() + pe->position);
 				hintedAt.push_back(foo);
@@ -203,6 +206,9 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			if (pe->wasItThisPlayer){
 				// remove all options from this position in the players hand-- will be replaced by draw
 				playerHand.at(pe->position) = deck;
+				//playerHintedAt();
+				playerHintedAtStored.erase(playerHintedAtStored.begin() + pe->position);
+				playerHintedAtStored.push_back(foo);
 			} else {
 				hintedAt.erase(hintedAt.begin() + pe->position);
 				hintedAt.push_back(foo);
@@ -239,13 +245,16 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			// remove all options from this position in the players hand-- will be replaced by draw
 			for (int i = 0; i < playerHand.at(de->position).size(); i++)
 			{
-				playerHand.at(de->position).at(i).clear();
+				//playerHand.at(de->position).at(i).clear();
 			}
 			playerHintedAtStored[de->position] = foo;
-		} else {
-			hintedAt.erase(hintedAt.begin() + de->position);
-			hintedAt.push_back(foo);
-		}
+			//playerHintedAt();
+			playerHintedAtStored.erase(playerHintedAtStored.begin() + de->position);
+			playerHintedAtStored.push_back(foo);
+			} else {
+				hintedAt.erase(hintedAt.begin() + de->position);
+				hintedAt.push_back(foo);
+			}
 
 		// add discarded card to the pile
 		discardPile.push_back(de->c);
@@ -281,7 +290,7 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 					playerHand.at(ce->indices.at(i)).at(j).clear();
 				}
 			}
-			hintedAt[ce->indices.at(i)].first = true; // hand at this position has been hinted a color
+			playerHintedAtStored[ce->indices.at(i)].first = true; // hand at this position has been hinted a color
 		}
 	}
 	else if (currentAction == 14){
@@ -319,7 +328,7 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 				playerHand.at(ne->indices.at(i)).at(j).clear();
 				playerHand.at(ne->indices.at(i)).at(j).push_back(ne->number);
 			}
-			hintedAt[ne->indices.at(i)].second = true; // hand at this position has been hinted a number
+			playerHintedAtStored[ne->indices.at(i)].second = true; // hand at this position has been hinted a number
 		}
 	}
 	else if (currentAction == 0){
@@ -344,9 +353,10 @@ Event* Player::ask()
 	// needs to be called every time to update values based on hints
 	playerHintedAt();
 
+	
 	bool hint = true;
 	//1 Save Hint
-	if (turns >= 5){ // wait till second stage of game TODO:
+	if (turns >= 4){ // wait till second stage of game TODO:
 		int in = chooseOpponentDiscard();
 		if (in != -1){
 			if (!hintedAt[in].first && !hintedAt[in].second){ // if both false, high chance of discard
@@ -389,6 +399,7 @@ Event* Player::ask()
 		}
 	}
 
+
 	//4 Play Hint
 		/* Looking at every PLAYABLE card in THEIR hand */
 		// Hint at the number of the card in the smallest group
@@ -399,13 +410,34 @@ Event* Player::ask()
 		if (canBePlayed(oHand[i])){
 			if (hintedAt[i].second != true){
 				NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), oHand[i].number);
+				for (int j = 0; j < oHand.size(); j++)
+				{
+					if (oHand[j].number == oHand[i].number)
+						hintedAt[j].second = true;
+				}
 				return numberEvent;
 			}
 		}
 	}
-	//5 Discard
-	DiscardEvent* discardEvent = new DiscardEvent(chooseDiscard(true));
-	return discardEvent;
+
+	if (hints == 8){
+		for (int i = 0; i < playerHintedAtStored.size(); i++)
+		{
+			if (playerHintedAtStored[i].second == true){
+				ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[i].color);
+				return colorEvent;
+			}
+
+		}
+		ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[0].color);
+		return colorEvent;
+		
+	} else {
+		//5 Discard
+		DiscardEvent* discardEvent = new DiscardEvent(chooseDiscard(true));
+		return discardEvent;
+	}
+	
 	
 
 	turns++;
@@ -421,9 +453,10 @@ bool Player::canBePlayed(Card c){
 }
 bool Player::numberCanBePlayed(int n){
 	// goes through tableau and if there is a value anywhere that the number can be played on, it returns true
+	int val = n - 1;
 	for (int i = 0; i < tableau.size(); i++)
 	{
-		if (tableau[i] == n--)
+		if (tableau[i] == val)
 			return true;
 	}
 
@@ -628,6 +661,7 @@ void Player::playerHintedAt(){
 	for (int i = 0; i < playerHand.size(); i++)
 	{
 		cols = 0;
+		nums = 0;
 		colorHinted = false;
 	    numberHinted = false;
 
