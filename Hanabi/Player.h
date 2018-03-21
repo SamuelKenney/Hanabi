@@ -416,6 +416,11 @@ Event* Player::ask()
 				// TODO:
 				if (lastCard(oHand[in])){ // if this is the last card, give a color hint
 					ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[in].color);
+					for (int j = 0; j < oHand.size(); j++)
+					{
+						if (oHand[j].number == oHand[in].color)
+							hintedAt[j].first = true;
+					}
 					return colorEvent;
 				}
 			}
@@ -781,28 +786,45 @@ void Player::playerHintedAt(){
 }
 
 void Player::print(){
-	/*std::cout << "Other player's hand" << std::endl;
-	for (int i = 0; i < oHand.size(); i++)
+	std::cout << "Other hints: \n";
+	for (int i = 0; i < hintedAt.size(); i++)
 	{
-		switch(oHand[i].color){
+		switch (i){
 		case 0:
-			std::cout << "Red: ";
+			std::cout << "First Card: ";
 			break;
 		case 1:
-			std::cout << "Blue: ";
+			std::cout << "Second Card: ";
 			break;
 		case 2:
-			std::cout << "Green: ";
+			std::cout << "Third Card: ";
 			break;
 		case 3:
-			std::cout << "Yellow: ";
+			std::cout << "Fourth Card: ";
 			break;
 		case 4:
-			std::cout << "White: ";
+			std::cout << "Fifth Card: ";
 			break;
 		}
-		std::cout << oHand[i].number << " ";
-	}*/
+		switch(hintedAt[i].first){
+		case (true):
+			std::cout << "T ";
+			break;
+		case (false):
+			std::cout << "F ";
+			break;
+		}
+
+		switch(hintedAt[i].second){
+		case (true):
+			std::cout << "T ";
+			break;
+		case (false):
+			std::cout << "F ";
+			break;
+		}
+	}
+	std::cout << "\nOur hints: " << std::endl;
 	for (int i = 0; i < playerHintedAtStored.size(); i++)
 	{
 		switch (i){
@@ -840,6 +862,7 @@ void Player::print(){
 			break;
 		}
 	}
+	std::cout << std::endl;
 	std::cout << std::endl;
 	for (int i = 0; i < playerHand.size(); i++)
 	{
