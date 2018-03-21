@@ -1,38 +1,45 @@
-﻿Build started 3/21/2018 12:16:32 AM.
+﻿Build started 3/21/2018 1:04:55 PM.
      1>Project "C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Spring2018-SrYear\AI\Hanabi\Hanabi\Hanabi.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Hanabi.cpp
          Hanabi.cpp
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(184): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(223): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(246): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(263): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(281): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(285): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(175): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(201): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(227): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(252): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(277): warning C4018: '<' : signed/unsigned mismatch
      1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(301): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(321): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(325): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(393): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(402): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(407): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(421): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(427): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(438): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(471): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(484): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(526): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(544): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(557): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(564): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(577): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(595): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(606): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(319): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(323): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(339): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(374): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(378): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(442): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(447): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(461): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(474): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(480): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(491): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(496): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(527): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(540): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(582): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(600): warning C4018: '<' : signed/unsigned mismatch
      1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(613): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(630): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(620): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(633): warning C4018: '<' : signed/unsigned mismatch
      1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(651): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(675): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(683): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(693): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(662): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(669): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(686): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(717): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(749): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(757): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(767): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(806): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(844): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(863): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\spring2018-sryear\ai\hanabi\hanabi\player.h(514): warning C4715: 'Player::ask' : not all control paths return a value
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Spring2018-SrYear\AI\Hanabi\Debug\Hanabi.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Spring2018-SrYear\AI\Hanabi\Debug\Hanabi.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Spring2018-SrYear\AI\Hanabi\Debug\Hanabi.lib" /MACHINE:X86 Debug\Hanabi.obj
          Debug\stdafx.obj
@@ -41,4 +48,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.92
+Time Elapsed 00:00:02.32
