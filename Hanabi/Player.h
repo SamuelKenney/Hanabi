@@ -399,6 +399,20 @@ Event* Player::ask()
 		}
 	}
 
+	for (int i = 0; i < playerHintedAtStored.size(); i++)
+	{
+		if (hintedAt[i].second == true){
+			ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[i].color);
+
+			for (int j = 0; j < oHand.size(); j++)
+			{
+				if (oHand[j].number == oHand[i].number)
+						hintedAt[j].first = true;
+			}
+			return colorEvent;
+		}
+
+	}
 
 	//4 Play Hint
 		/* Looking at every PLAYABLE card in THEIR hand */
