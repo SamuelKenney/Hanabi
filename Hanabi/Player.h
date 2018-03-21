@@ -41,6 +41,7 @@ protected:
 	std::vector<int> pastColorHintMoves;
 	std::vector<int> pastNumberHintMoves;
 
+	bool lastCard(Card c);
 
 	// elements for the Knowledge base
 	int hints;
@@ -53,14 +54,16 @@ protected:
 	vector<std::pair<bool, bool>> playerHintedAtStored;
 
 	bool canBePlayed(Card c);
-	int chooseDiscard(bool uncertain=false);
+	int chooseDiscard(bool uncertain = false);
+	int chooseOpponentDiscard();
 	bool numberCanBePlayed(int n);
 	void playerHintedAt();
+	void otherPlayerHintedAt();
 
 	int getCardColor(int index);
 	int getCardNumber(int index);
 
-	Card cardPlay();
+	int cardPlay();
 
 	int turns;
 };
@@ -158,11 +161,15 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 	if (currentAction == 11){
 		PlayEvent* pe = (PlayEvent*) e;
 		//only play card if legal
+		std::pair<bool, bool> foo = std::pair<bool, bool>(false, false);
 		if (pe->legal){
 			// take away from player hand or other hand
 			if (pe->wasItThisPlayer){
 				// remove all options from this position in the players hand-- will be replaced by draw
 				playerHand.at(pe->position) = deck; // cards that are left over in the deck, not all 50 cards
+			} else {
+				hintedAt.erase(hintedAt.begin() + pe->position);
+				hintedAt.push_back(foo);
 			}
 
 			// push card onto the tableau when it is a valid move
@@ -196,7 +203,10 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			if (pe->wasItThisPlayer){
 				// remove all options from this position in the players hand-- will be replaced by draw
 				playerHand.at(pe->position) = deck;
-			} 
+			} else {
+				hintedAt.erase(hintedAt.begin() + pe->position);
+				hintedAt.push_back(foo);
+			}
 
 			//add discarded card to the pile
 			discardPile.push_back(pe->c);
@@ -224,11 +234,17 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 	else if(currentAction == 12){
 		DiscardEvent* de = (DiscardEvent*) e;
 		// depending on who it is, the card is removed from the hand and the deck
+		std::pair<bool, bool> foo = std::pair<bool, bool>(false, false);
 		if (de->wasItThisPlayer){
 			// remove all options from this position in the players hand-- will be replaced by draw
-			playerHand.at(de->position).at(de->c.color).clear();
+			for (int i = 0; i < playerHand.at(de->position).size(); i++)
+			{
+				playerHand.at(de->position).at(i).clear();
+			}
+			playerHintedAtStored[de->position] = foo;
 		} else {
-			oHand.at(de->position).color = -1; // TODO: figure out a better way than sentinel value for no card in oHand
+			hintedAt.erase(hintedAt.begin() + de->position);
+			hintedAt.push_back(foo);
 		}
 
 		// add discarded card to the pile
@@ -246,7 +262,7 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 		}
 
 		// Removes the card from the map that holds the deck
-		std::list<int>::iterator it = std::find(deck.at(de->c.number).begin(), deck.at(de->c.number).end(), de->c.color);
+		std::list<int>::iterator it = std::find(deck.at(de->c.color).begin(), deck.at(de->c.color).end(), de->c.number);
 		// makes sure there are no out of bound errors
 		if (it != deck.at(de->c.color).end())
 			deck.at(de->c.color).erase(it);
@@ -263,9 +279,9 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 				// grab the position of the index specified in indices at i
 				if (j != ce->color){
 					playerHand.at(ce->indices.at(i)).at(j).clear();
-					hintedAt[i].first = true; // hand at this position has been hinted a color
 				}
 			}
+			hintedAt[ce->indices.at(i)].first = true; // hand at this position has been hinted a color
 		}
 	}
 	else if (currentAction == 14){
@@ -302,37 +318,20 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 				// grab the position of the index specified in indices at i
 				playerHand.at(ne->indices.at(i)).at(j).clear();
 				playerHand.at(ne->indices.at(i)).at(j).push_back(ne->number);
-				hintedAt[i].second = true; // hand at this position has been hinted a number
 			}
+			hintedAt[ne->indices.at(i)].second = true; // hand at this position has been hinted a number
 		}
 	}
 	else if (currentAction == 0){
 		// TODO: Probably nothing
 	}
 
+	this->tableau = board;
 	this->hints = hints;
 	this->fuses = fuses;
 	this->oHand = oHand;
 	this->deckSize = deckSize;
 
-
-	/*  Possible kinds of event:
-		DiscardEvent - can be for us or other player
-			c - the card discarded
-			wasItThisPlayer - true if we discarded, false otherwise
-			position - the index in hand of the discarded card (0 base)
-		ColorHintEvent - always for other player
-			indices - all indices of the chosen color
-			color - the color in question
-		NumberHintEvent - always for the other player
-			indices - all indices of the chosen number
-			color - the number in question
-		PlayEvent - can be for us or other player
-			position - the index in hand of the discarded card (0 base)
-			c - the card played
-			legal - whether the card was a legal play
-			wasItThisPlayer - true if we played, false otherwise
-	*/
 }
 
 Event* Player::ask()
@@ -342,157 +341,80 @@ Event* Player::ask()
 	// ==========This function will figure out the next best move to be made by the player=========
 	// ============================================================================================
 
-	/*
-	 What do I have in my knowledge base to make a decision?
-		- Player's Hand: or what could be
-		- Deck: Cards left in the deck
-		- Tableau: cards played to win the game
-		- Discard Pile: cards that have been discarded or poorly played
+	// needs to be called every time to update values based on hints
+	playerHintedAt();
 
-	// elements for the Knowledge base
-	int hints;
-	int fuses;
-	// easily can store other hand
-	vector<Card> oHand;
-	int deckSize;
-	*/
-
-	// The following hold each of the instantiations of the Event class with all needed arguments
-	// Copy and paste from here to each decision made
-	/*
-	int card = 0;
-	ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), card);
-	return colorEvent;
-
-	int number = 1;
-	NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), number);
-	return numberEvent;
-
-	int index = 0;
-	PlayEvent* playEvent = new PlayEvent(index);
-	return playEvent;
-
-	int indexDis = 0;
-	DiscardEvent* discardEvent = new DiscardEvent(indexDis);
-	return discardEvent;
-	*/
-	
+	bool hint = true;
 	//1 Save Hint
-	if (turns > 5){ // wait till second stage of game
-		for (int i = 0; i < hintedAt.size(); i++)
-		{
-			if (!hintedAt[i].first && !hintedAt[i].second){ // if both false, high chance of discard
+	if (turns >= 5){ // wait till second stage of game TODO:
+		int in = chooseOpponentDiscard();
+		if (in != -1){
+			if (!hintedAt[in].first && !hintedAt[in].second){ // if both false, high chance of discard
 				// TODO:
+				if (lastCard(oHand[in])){ // if this is the last card, give a color hint
+					ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[in].color);
+					return colorEvent;
+				}
 			}
 		}
 	}
-	playerHintedAt();
-	cardPlay();
 
+	if (hints < 8) {
+		int c = chooseDiscard();
+		if (c != -1){ // if there is a good guaranteed card to get rid of, do it
+			DiscardEvent* discardEvent = new DiscardEvent(c);
+			return discardEvent;
+		}
+	}
 
 	//2 Good play
-	
-		/* Looking at every card in MY hand */
-		// If fully known card, discard (if hints < 8) or play accordingly
+	int c = cardPlay();
+	if (c != -1 ){ // if its a real card
+		PlayEvent* playEvent = new PlayEvent(c); // if a real card that can be played, play it
+		return playEvent;
+	}
+	/* Looking at every card in MY hand */
+	// If fully known card, discard (if hints < 8) or play accordingly
 
-	//3 Bad play
+	//3 Uncertain play
 		// If number known & playable, play it
 		// Perhaps play the rarest card possible? eg play a 5 over a 3
 		// If only color known, skip it
+	for (int i = 0; i < playerHand.size(); i++)
+	{
+		int num = getCardNumber(i);
+		if (num != -1 && numberCanBePlayed(num)){
+			PlayEvent* playEvent = new PlayEvent(i); // if a real card that can be played, play it
+			return playEvent;
+		}
+	}
 
 	//4 Play Hint
 		/* Looking at every PLAYABLE card in THEIR hand */
 		// Hint at the number of the card in the smallest group
 			// Eg if there is a playable 1 and 2, but there are more 1's than 2's, hint the 2
-
-	//5 Discard
-		
-
-	turns++;
-
-
-	PlayEvent* playEvent = new PlayEvent(0);
-	return playEvent;
-
-
-
-
-
-
-
-
-	
-	/*
-
-
-	srand (time(NULL));
-	int choice = rand()%10;
-
-	
-	Three main moves
-		1. Give a hint -- based on other player's hand
-			- if hint given, go through and update which cards have been hinted
-			- if they have been hinted, do not hint color or number again
-			- if 1 white, find 2 or white
-			- if 3 blue, find 4 or blue
-
-		2. Play a card -- based on what we know about our hand
-			- go through, if there are any ones and are playable, play them 
-
-		3. Discard a card -- based on what we know about our hand
-
-	
-
-	// at all times, and in all places, play a 1
-	for (int i = 0; i < playerHand.size(); i++)
-	{
-		// first  red                   green                blue
-		// <0 < 0 <1 1 1 2 2 3 3 4 4 5> 1 <1 1 1 2 2 3 3 4 4 5> ... > > >
-		for (int j = 0; j < playerHand.at(i).size(); j++)
-		{
-			if (playerHand.at(i).at(j).size() == 1){
-				if (playerHand.at(i).at(j).front() == 1){
-					PlayEvent* playEvent = new PlayEvent(i);
-					return playEvent;
-				}
-			}
-		}
-
-	}
-	
-
-	
-	// maybe do some sort of check on if there are ones
-	// and then if there are any ones played, look for twos etc.
-	// if there are any played on the board, look for that color
-
-	// make hints based on the tableau and what you want on it
 	for (int i = 0; i < oHand.size(); i++)
 	{
-		if (oHand[i].number == 1 && hintedAt[i].second != true){
-			NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), 1);
-			return numberEvent;
+		// TODO: whittle down options
+		if (canBePlayed(oHand[i])){
+			if (hintedAt[i].second != true){
+				NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), oHand[i].number);
+				return numberEvent;
+			}
 		}
 	}
+	//5 Discard
+	DiscardEvent* discardEvent = new DiscardEvent(chooseDiscard(true));
+	return discardEvent;
+	
 
-	  You must produce an event of the appropriate type. Not all member
-		variables of a given event type need to be filled in; some will be
-		ignored even if they are. Summary follows.
-		Options:
-			ColorHintEvent - you must declare a color; no other member variables
-				necessary.
-			NumberHintEvent - you must declare a number; no other member variables
-				necessary.
-			PlayEvent - you must declare the index to be played; no other member
-				variables necessary.
-			DiscardEvent - you must declare the index to be discarded; no other
-				member variables necessary.
-	*/
+	turns++;
 }
 
 bool Player::canBePlayed(Card c){
+	int val = c.number - 1;
 	// goes to specific spot in tableau and if the played card is one lower than possible played card, return true
-	if (tableau[c.color] == c.number--)
+	if (tableau[c.color] == val)
 		return true;
 		
 	return false;
@@ -508,69 +430,147 @@ bool Player::numberCanBePlayed(int n){
 	return false;
 }
 
-Card Player::cardPlay(){
-	int cols = 0;
-	int in = 0;
-
+/// Returns a card that can be played, if no cards playable, return -1 for color and number
+int Player::cardPlay(){
+	int in = -1;
+	Card c = Card(-1, -1); 
 	for (int i = 0; i < playerHand.size(); i++)
 	{
-		cols = 0;
-		// check if the color is known
-		for (int j = 0; j < playerHand.at(i).size(); j++)
-		{
-			if (playerHand.at(i).at(j).empty()){
-				cols++;
+		int colr = getCardColor(i);
+		if (colr != -1){
+			int num = getCardNumber(i);
+			if (num != -1) {
+				c.color = colr;
+				c.number = num;
+				if (canBePlayed(c)){
+					return i;
+				} else {
+					in = -1;
+				}
 			}
 		}
-		if (cols == 4){ // if color has been known, store which card is known
-			in = i;
-		}
 	}
 
-	// sentinel values for if there is no card to be played
-	int color = -1;
-	int number = -1;
-	// go through the card that has a known color
-	for (int j = 0; j < playerHand.at(in).size(); j++)
-	{
-		if (playerHand.at(in).at(j).size() == 1){
-			color = j;
-			number = playerHand.at(in).at(j).front();
-		}
+	return in;
+}
+
+bool Player::lastCard(Card c){
+	int counter = 0;
+	if (c.number == 5){
+		return true;
 	}
 
-	Card c = Card(color, number); // return card that is playable since color and number is known at the same time
-	return c;
+	std::list<int>::iterator it = std::find(deck.at(c.color).begin(), deck.at(c.color).end(), c.number);
+	if (it == deck.at(c.color).end()){
+		return true;
+	}
+	return false;
+
 }
 
 /// Returns the index of the best card to discard
 ///	if uncertain = true than 
-int Player::chooseDiscard(bool uncertain = false) {
+int Player::chooseDiscard(bool uncertain) {
 	// This case is assuming we have already discarded any obvious discards
 	/* Looking a the cards in order of least information known first */
 	
 	// Any known safe discard
 	playerHintedAt();
-	for (int i = 0; i < hintedAt.size(); i++)
+	for (int i = 0; i < playerHintedAtStored.size(); i++)
 	{
+		int color = getCardColor(i);
+		int number = getCardNumber(i);
+
 		// if we know the card and it can't be played
 		// TODO: Consider if the card is numbered, but we cannot play it
-		if (hintedAt[i].first && hintedAt[i].second
-			&& (tableau[i] >= getCardNumber(i)) {
+		if (playerHintedAtStored[i].first && playerHintedAtStored[i].second && (tableau[i] >= getCardNumber(i)))
+		{
 			return i;
 		}
 
-		// 1. Any color xor number we know to be 'used up'
-	}
+		// 1. Any color xor number we know to be 'used up' 
+		if (color != -1 && tableau[color] == 5){
+			return i; // discard this card
+		}
 
+		int min = 5;
+		for (int j = 0; j < tableau.size(); j++)
+		{
+			if (tableau[j] < min){
+				min = tableau[j];
+			}
+		}
+		if (number != -1 && number <= min){
+			return i;
+		}
+	}
 	// Uncertain discards
 	if (uncertain) {
-		
-		// 2. Unknown
-		// 3. Color Known
-		// 4. Number Known
+		int in = -1;
+		for (int i = 0; i < playerHintedAtStored.size(); i++)
+		{
+			// 2. Unknown
+			if (!playerHintedAtStored[i].first && !playerHintedAtStored[i].second){
+				return i;
+			} 
+		}
+		for (int i = 0; i < playerHintedAtStored.size(); i++)
+		{
+			// 3. Color Known
+			if (playerHintedAtStored[i].first && !playerHintedAtStored[i].second){
+				return i;
+			} 
+		}
+		return 0;
 	}
-	
+	return -1;
+}
+
+int Player::chooseOpponentDiscard(){
+	for (int i = 0; i < hintedAt.size(); i++)
+	{
+		int color = getCardColor(i);
+		int number = getCardNumber(i);
+
+		// if we know the card and it can't be played
+		// TODO: Consider if the card is numbered, but we cannot play it
+		if (hintedAt[i].first && hintedAt[i].second && (tableau[i] >= oHand[i].number))
+		{
+			return i;
+		}
+
+		// 1. Any color xor number we know to be 'used up' 
+		if (color != -1 && tableau[color] == 5){
+			return i; // discard this card
+		}
+
+		int min = 5;
+		for (int j = 0; j < tableau.size(); j++)
+		{
+			if (tableau[j] < min){
+				min = tableau[j];
+			}
+		}
+		if (number != -1 && number <= min){
+			return i;
+		}
+	}
+
+	for (int i = 0; i < playerHintedAtStored.size(); i++)
+	{
+		// 2. Unknown
+		if (!playerHintedAtStored[i].first && !playerHintedAtStored[i].second){
+			return i;
+		} 
+	}
+	for (int i = 0; i < playerHintedAtStored.size(); i++)
+	{
+		// 3. Color Known
+		if (playerHintedAtStored[i].first && !playerHintedAtStored[i].second){
+			return i;
+		} 
+	}
+	return -1;
 }
 
 /// Returns the color of the card if it is definite, returns -1 otherwise
@@ -607,7 +607,10 @@ int Player::getCardNumber(int card) {
 			return -1;
 		}
 	}
-	return playerHand.at(card).at(0).front;
+	if (!playerHand.at(card).at(0).empty())
+		return playerHand.at(card).at(0).front();
+	else 
+		return -1;
 }
 
 
@@ -653,5 +656,9 @@ void Player::playerHintedAt(){
 		std::pair<bool, bool> temp = std::pair<bool, bool>(colorHinted, numberHinted);
 		playerHintedAtStored[i] = temp;
 	}
+}
+
+void otherPlayerHintedAt(){
+
 }
 #endif
