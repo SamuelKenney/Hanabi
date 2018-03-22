@@ -54,7 +54,7 @@ protected:
 
 	// Managing hand knowledge
 	void removePossibilityFromHand(std::map<int, std::map<int, std::list<int>>> &hand, Card c);
-	void removeCardFromHand(std::map<int, std::map<int, std::list<int>>> &hand, Card c);
+	void removeCardFromHand(std::map<int, std::map<int, std::list<int>>> &hand, int i);
 	void setCardHandColor(std::map<int, std::map<int, std::list<int>>> &hand, int cardIndex, int color);
 	void setCardHandNumber(std::map<int, std::map<int, std::list<int>>> &hand, int cardIndex, int number);
 
@@ -65,6 +65,7 @@ protected:
 	int getCardColor(std::map<int, std::map<int, std::list<int>>> hand, int index);
 	int getCardNumber(std::map<int, std::map<int, std::list<int>>> hand, int index);
 	int getPlayableCard(std::map<int, std::map<int, std::list<int>>> hand);
+	int getCleanNumberHint();
 
 	vector<std::pair<bool, bool>> hintedAt;
 	vector<std::pair<bool, bool>> playerHintedAtStored;
@@ -112,12 +113,26 @@ Player::Player()
 	playerHand[3] = deck; //Position 3
 	playerHand[4] = deck; //Position 4
 
+	partnerHand[0] = deck; //Position 0
+	partnerHand[1] = deck; //Position 1
+	partnerHand[2] = deck; //Position 2
+	partnerHand[3] = deck; //Position 3
+	partnerHand[4] = deck; //Position 4
+
 													// color, number
 	std::pair<bool, bool> pos0 = std::pair<bool, bool>(false, false);
 	std::pair<bool, bool> pos1 = std::pair<bool, bool>(false, false);
 	std::pair<bool, bool> pos2 = std::pair<bool, bool>(false, false);
 	std::pair<bool, bool> pos3 = std::pair<bool, bool>(false, false);
 	std::pair<bool, bool>pos4 = std::pair<bool, bool>(false, false);
+
+	hintedAt.push_back(pos0);
+	hintedAt.push_back(pos1);
+	hintedAt.push_back(pos2);
+	hintedAt.push_back(pos3);
+	hintedAt.push_back(pos4);
+
+	playerHintedAtStored.resize(5);
 
 	turns = 0;
 }
@@ -161,37 +176,29 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 		std::pair<bool, bool> foo = std::pair<bool, bool>(false, false);
 		if (pe->legal){
 			// take away from player hand or other hand
-			if (pe->wasItThisPlayer){
-				// remove all options from this position in the players hand-- will be replaced by draw
-
+			// take away from player hand or other hand
+			if (pe->wasItThisPlayer) {
 				// removes the card from the play, and shifts everything down
-				std::map<int,std::map<int, std::list<int>>> temp;
-				int count = 0;
-				for (int i = 0; i < playerHand.size(); i++)
-				{
-					if (i != pe->position){
-						temp[count] = playerHand[i];
-					} else {
-						count--;
-					}
-					count++;
-				}
-				temp[4] = deck;
-				playerHand = temp;
+				std::map<int, std::map<int, std::list<int>>> temp;
+				removeCardFromHand(playerHand, pe->position);
 
-				//playerHintedAt();
+				// need to update own hand to reflect that it is no longer an option
+				removePossibilityFromHand(playerHand, pe->c);
+
 				playerHintedAtStored.erase(playerHintedAtStored.begin() + pe->position);
 				playerHintedAtStored.push_back(foo);
-			} else {
+			}
+			else {
+				// need to update own hand to reflect that it is no longer an option
+				removePossibilityFromHand(partnerHand, pe->c);
+				removeCardFromHand(partnerHand, pe->position);
+
 				hintedAt.erase(hintedAt.begin() + pe->position);
 				hintedAt.push_back(foo);
 			}
 
 			// push card onto the tableau when it is a valid move
 			tableau = board;
-
-			// need to update own hand to reflect that it is no longer an option
-			removePossibilityFromHand(playerHand, pe->c);
 
 			// Removes the card from the map that holds the deck
 			std::list<int>::iterator it = std::find(deck.at(pe->c.color).begin(), deck.at(pe->c.color).end(), pe->c.number);
@@ -208,22 +215,18 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			if (pe->wasItThisPlayer){
 				// removes the card from the play, and shifts everything down
 				std::map<int,std::map<int, std::list<int>>> temp;
-				int count = 0;
-				for (int i = 0; i < playerHand.size(); i++)
-				{
-					if (i != pe->position){
-						temp[count] = playerHand[i];
-					} else {
-						count--;
-					}
-					count++;
-				}
-				temp[4] = deck;
-				playerHand = temp;
+				removeCardFromHand(playerHand, pe->position);
 				
+				// need to update own hand to reflect that it is no longer an option
+				removePossibilityFromHand(playerHand, pe->c);
+
 				playerHintedAtStored.erase(playerHintedAtStored.begin() + pe->position);
 				playerHintedAtStored.push_back(foo);
 			} else {
+				// need to update own hand to reflect that it is no longer an option
+				removePossibilityFromHand(partnerHand, pe->c);
+				removeCardFromHand(partnerHand, pe->position);
+
 				hintedAt.erase(hintedAt.begin() + pe->position);
 				hintedAt.push_back(foo);
 			}
@@ -231,9 +234,6 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			//add discarded card to the pile
 			discardPile.push_back(pe->c);
 
-			// need to update own hand to reflect that it is no longer an option
-			removePossibilityFromHand(playerHand, pe->c);
-			removePossibilityFromHand(partnerHand, pe->c);
 
 			// Removes the card from the map that holds the deck
 			std::list<int>::iterator it = std::find(deck.at(pe->c.color).begin(), deck.at(pe->c.color).end(), pe->c.number);
@@ -246,26 +246,21 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 		DiscardEvent* de = (DiscardEvent*)e;
 		// depending on who it is, the card is removed from the hand and the deck
 		std::pair<bool, bool> foo = std::pair<bool, bool>(false, false);
-		if (de->wasItThisPlayer){
+		if (de->wasItThisPlayer) {
 			// removes the card from the play, and shifts everything down
-			std::map<int,std::map<int, std::list<int>>> temp;
-			int count = 0;
-			for (int i = 0; i < playerHand.size(); i++)
-			{
-				if (i != de->position){
-					temp[count] = playerHand[i];
-				} else {
-					count--;
-				}
-				count++;
-			}
-			temp[4] = deck;
-			playerHand = temp;
+			std::map<int, std::map<int, std::list<int>>> temp;
+			removeCardFromHand(playerHand, de->position);
 
-			//playerHintedAt();
 			playerHintedAtStored.erase(playerHintedAtStored.begin() + de->position);
 			playerHintedAtStored.push_back(foo);
-		} else {
+
+			// update the players hand based on what is discarded
+			removePossibilityFromHand(playerHand, de->c);
+		}
+		else {
+			removePossibilityFromHand(partnerHand, de->c);
+			removeCardFromHand(partnerHand, de->position);
+
 			hintedAt.erase(hintedAt.begin() + de->position);
 			hintedAt.push_back(foo);
 		}
@@ -273,8 +268,6 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 		// add discarded card to the pile
 		discardPile.push_back(de->c);
 
-		// update the players hand based on what is discarded
-		removePossibilityFromHand(playerHand, de->c);
 
 		// Removes the card from the map that holds the deck
 		std::list<int>::iterator it = std::find(deck.at(de->c.color).begin(), deck.at(de->c.color).end(), de->c.number);
@@ -294,16 +287,7 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 		DrawEvent* dre = (DrawEvent*)e;
 
 		// removes drawn card from the player's hand
-		for (int i = 0; i < playerHand.size(); i++)
-		{
-			if (!playerHand.at(i).empty() && !playerHand.at(i).at(dre->drawnCard.color).empty()) {
-				// Removes the card from the map that holds the deck
-				std::list<int>::iterator it = std::find(playerHand.at(i).at(dre->drawnCard.color).begin(), playerHand.at(i).at(dre->drawnCard.color).end(), dre->drawnCard.number);
-				if (it != playerHand.at(i).at(dre->drawnCard.color).end()) {
-					playerHand.at(i).at(dre->drawnCard.color).erase(it);
-				}
-			}
-		}
+		removePossibilityFromHand(playerHand, dre->drawnCard);
 
 		// Removes the card from the map that holds the deck
 		std::list<int>::iterator it = std::find(deck.at(dre->drawnCard.color).begin(), deck.at(dre->drawnCard.color).end(), dre->drawnCard.number);
@@ -313,32 +297,11 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 	}
 	else if (currentAction == 15){
 		NumberHintEvent* ne = (NumberHintEvent*) e;
-		std::list<int> choosen;
-		if (ne->number == 1){ // if 1, push back three
-			for (int i = 0; i < 3; i++)
-			{
-				choosen.push_back(ne->number);
-			}
-		}
-		else if (ne->number == 5){ // if 5
-			choosen.push_back(ne->number);
-		} else { // if 2, 3, or 4 push back two
-			choosen.push_back(ne->number);
-			choosen.push_back(ne->number);
-		}
-
-
+		// TODO: How many of the number were present before hint
 
 		for (int i = 0; i < ne->indices.size(); i++)
 		{
-			// first  red                   green                blue
-			// <0 < 0 <1 1 1 2 2 3 3 4 4 5> 1 <1 1 1 2 2 3 3 4 4 5> ... > > >
-			for (int j = 0; j < playerHand.at(i).size(); j++)
-			{
-				// grab the position of the index specified in indices at i
-				playerHand.at(ne->indices.at(i)).at(j) = choosen; // set the new vector there to be the possible options
-			}
-			playerHintedAtStored[ne->indices.at(i)].second = true; // hand at this position has been hinted a number
+			setCardHandNumber(playerHand, ne->indices.at(i), ne->number);
 		}
 	}
 	else if (currentAction == 0){
@@ -369,12 +332,12 @@ Event* Player::ask()
 	bool hint = true;
 	//1 Save Hint
 	if (turns >= 2){ // wait till second stage of game TODO:
-		int in = chooseOpponentDiscard();
+		int in = chooseDiscard(partnerHand);
 		// TODO: DO WE HAVE ANY HINTS TO SPEND!!!
 		if (in != -1){
 			if (!hintedAt[in].first && !hintedAt[in].second){ // if both false, high chance of discard
 				// TODO: PLAYED TOO MANY LAST CARDS
-				if (lastCard(oHand[in])){ // if this is the last card, give a color hint
+				if (lastCard(oHand[in]) && hints != 0){ // if this is the last card, give a color hint
 					ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[in].color);
 					for (int j = 0; j < oHand.size(); j++)
 					{
@@ -388,7 +351,7 @@ Event* Player::ask()
 	}
 
 	if (hints < 8) {
-		int c = chooseDiscard();
+		int c = chooseDiscard(playerHand);
 		if (c != -1) { // if there is a good guaranteed card to get rid of, do it
 			DiscardEvent* discardEvent = new DiscardEvent(c);
 			return discardEvent;
@@ -404,9 +367,10 @@ Event* Player::ask()
 	/* Looking at every card in MY hand */
 	// If fully known card, discard (if hints < 8) or play accordingly
 
+	// 
 	for (int i = 0; i < hintedAt.size(); i++) // TODO: HINTS NEED TO NOT BE 0!!!!
 	{
-		if (hintedAt[i].second == true){
+		if (hintedAt[i].second == true && hints != 0){
 			ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[i].color);
 
 			for (int j = 0; j < oHand.size(); j++)
@@ -425,8 +389,8 @@ Event* Player::ask()
 		// If only color known, skip it
 	for (int i = 0; i < playerHand.size(); i++)
 	{
-		int num = getCardNumber(i);
-		if (numberCanBePlayed(num)){
+		int num = getCardNumber(playerHand, i);
+		if (numberCanBePlayed(num) && getCardColor(playerHand, i) == -1){
 			PlayEvent* playEvent = new PlayEvent(i); // if a real card that can be played, play it
 			return playEvent;
 		}
@@ -439,8 +403,11 @@ Event* Player::ask()
 	for (int i = 0; i < oHand.size(); i++)
 	{
 		// TODO: whittle down options
+			// Look at all playable numbers, pick 'clean' numbers over 'dirty'
+				// A dirty number whose clue would mark unplayable cards to be played.
+
 		if (canBePlayed(oHand[i])) {
-			if (hintedAt[i].second != true) {
+			if (hintedAt[i].second != true && hints != 0) {
 				NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), oHand[i].number);
 				for (int j = 0; j < oHand.size(); j++)
 				{
@@ -452,10 +419,12 @@ Event* Player::ask()
 		}
 	}
 
+	// If we have max hints, give a hint
 	if (hints == 8){
 		for (int i = 0; i < hintedAt.size(); i++)
 		{
-			if (hintedAt[i].second == true){
+			// If we have hinted at this card's number (So high chance of a play hint), hint at its color bc we have no need for more hints
+			if (hintedAt[i].second == true && hints != 0){
 				ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[i].color);
 
 				for (int j = 0; j < oHand.size(); j++)
@@ -467,14 +436,11 @@ Event* Player::ask()
 			}
 
 		}
-	} else {
-		//5 Discard
-		DiscardEvent* discardEvent = new DiscardEvent(chooseDiscard(true));
-		return discardEvent;
-	}
-	
-	
+	} // Otherwise, discard what we have to
 
+	//5 Discard
+	DiscardEvent* discardEvent = new DiscardEvent(chooseDiscard(playerHand, true));
+	return discardEvent;
 	
 }
 
@@ -482,7 +448,7 @@ void Player::removePossibilityFromHand(std::map<int, std::map<int, std::list<int
 {
 	for (int i = 0; i < hand.size(); i++)
 	{
-		if (!hand.at(i).empty() && !hash.at(i).at(c.color).empty()) {
+		if (!hand.at(i).empty() && !hand.at(i).at(c.color).empty()) {
 			// Removes the card from the map that holds the deck
 			std::list<int>::iterator it = std::find(hand.at(i).at(c.color).begin(), hand.at(i).at(c.color).end(), c.number);
 			if (it != hand.at(i).at(c.color).end())
@@ -491,13 +457,13 @@ void Player::removePossibilityFromHand(std::map<int, std::map<int, std::list<int
 	}
 }
 
-void Player::removeCardFromHand(std::map<int, std::map<int, std::list<int>>> &hand, Card c)
+void Player::removeCardFromHand(std::map<int, std::map<int, std::list<int>>> &hand, int cardIndex)
 {
 	std::map<int, std::map<int, std::list<int>>> temp;
 	int count = 0;
 	for (int i = 0; i < hand.size(); i++)
 	{
-		if (i != pe->position) {
+		if (i != cardIndex) {
 			temp[count] = hand[i];
 		}
 		else {
@@ -512,25 +478,39 @@ void Player::removeCardFromHand(std::map<int, std::map<int, std::list<int>>> &ha
 /// Taske a hand and sets the card to the color
 void Player::setCardHandColor(std::map<int, std::map<int, std::list<int>>> &hand, int cardIndex, int color)
 {
-	for (int colorIndex = 0; colorIndex < hand.at(i).size(); colorIndex++)
+	for (int colorIndex = 0; colorIndex < hand.at(cardIndex).size(); colorIndex++)
 	{
 		// for each color not in hint, remove from the map
 		// grab the position of the index specified in indices at i
 		if (colorIndex != color) {
 			hand.at(cardIndex).at(colorIndex).clear();
 		}
-		playerHintedAtStored[cardIndex].first = true; // hand at this position has been hinted a number
+		playerHintedAtStored[colorIndex].first = true; // hand at this position has been hinted a number
 	}
 }
 
 void Player::setCardHandNumber(std::map<int, std::map<int, std::list<int>>> &hand, int cardIndex, int number)
 {
-	for (int colorIndex = 0; colorIndex < hand.at(cardIndex).size(); colorIndex++)
+	std::list<int> choosen;
+	for (int j = 0; j < playerHand.at(cardIndex).size(); j++)
 	{
+		int count = 0;
+		for (auto v : playerHand.at(cardIndex).at(j)) {
+			if (v == number) {
+				count++;
+			}
+		}
+
+		choosen.clear();
+
+		for (int k = 0; k < count; k++) {
+			choosen.push_back(number);
+		}
+
 		// grab the position of the index specified in indices at cardIndex
-		hand.at(cardIndex).at(colorIndex).clear();
-		hand.at(cardIndex).at(colorIndex).push_back(number);
+		playerHand.at(cardIndex).at(j) = choosen; // set the new vector there to be the possible options
 	}
+	playerHintedAtStored[cardIndex].second = true;
 }
 
 /// Returns true if the card can be played
@@ -560,12 +540,42 @@ bool Player::numberCanBePlayed(int n) {
 int Player::getPlayableCard(std::map<int, std::map<int, std::list<int>>> hand) {
 	for (int i = 0; i < hand.size(); i++)
 	{
-		int colr = getCardColor(i);
-		int num = getCardNumber(i);
+		int colr = getCardColor(hand, i);
+		int num = getCardNumber(hand, i);
+		Card c(colr, num);
 		if (colr != -1 && num != -1) {
-			if (canBePlayed(new Card(colr, num)) {
+			if (canBePlayed(c)) {
 				return i;
 			}
+		}
+	}
+
+	return -1;
+}
+
+inline int Player::getCleanNumberHint()
+{
+	std::vector<Card> playable;
+	// Get all playable cards from opponents hand
+	for (int c = 0; c < oHand.size(); c++) {
+		if (canBePlayed(oHand[c])) {
+			//playable.push_back();
+		}
+	}
+
+	// For each count up the number of unplayable cards that would also be hinted at
+
+	// Return any card that doesn't give any misleading hints (hinting at a card that cannot be played
+
+	std::vector<int> count = { 0,0,0,0,0 };
+	for (int cardIndex = 0; cardIndex < hintedAt.size(); cardIndex++) {
+		if (!hintedAt[cardIndex].second && true) {
+			count[cardIndex]++;
+		}
+	}
+	
+	for (int i = 0; i < count.size(); i++) {
+		if (count[i] == 1) {
 		}
 	}
 
@@ -602,7 +612,7 @@ int Player::chooseDiscard(std::map<int, std::map<int, std::list<int>>> hand, boo
 
 		// if we know the card and it can't be played
 		// TODO: Consider if the card is numbered, but we cannot play it
-		if (number != 0 && color != 0 && tableau[color] >= number)
+		if (number != -1 && color != -1 && tableau[color] >= number)
 		{
 			return cardIndex;
 		}
@@ -645,22 +655,12 @@ int Player::chooseDiscard(std::map<int, std::map<int, std::list<int>>> hand, boo
 	return -1;
 }
 
-/// Returns the index of the best card to play fromthe give hand
+/// Returns the index of the best card to play from the give hand
 /// Returns -1 if there is no play to be made
 int Player::choosePlay(std::map<int, std::map<int, std::list<int>>> hand) {
 	int cardIndex = getPlayableCard(hand);
 	if (cardIndex != -1) { // if its a real card
 		return cardIndex;
-	}
-
-	//3 Uncertain play
-	// TODO: Perhaps play the rarest card possible? eg play a 5 over a 3
-	for (cardIndex = 0; cardIndex < hand.size(); cardIndex++)
-	{
-		int num = getCardNumber(cardIndex);
-		if (num != -1 && numberCanBePlayed(num)) {
-			return cardIndex;
-		}
 	}
 
 	return -1;
@@ -724,7 +724,6 @@ int Player::getCardNumber(std::map<int, std::map<int, std::list<int>>> hand, int
 
 	return -1;
 }
-
 
 void Player::print(){
 	std::cout << "Other hints: \n";
