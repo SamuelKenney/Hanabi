@@ -1,40 +1,49 @@
-﻿Build started 3/21/2018 11:49:02 PM.
+﻿Build started 3/22/2018 9:52:33 AM.
      1>Project "C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Hanabi\Hanabi\Hanabi.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Hanabi.cpp
          Hanabi.cpp
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(297): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(319): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(363): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(388): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(412): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(439): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(445): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(457): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(464): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(475): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(482): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(504): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(519): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(536): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(306): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(328): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(381): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(397): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(413): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(448): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(453): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(506): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(513): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(525): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(532): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(543): warning C4018: '<' : signed/unsigned mismatch
      1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(550): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(585): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(596): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(616): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(566): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(572): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(582): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(591): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(610): warning C4018: '<' : signed/unsigned mismatch
      1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(625): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(627): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(689): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(707): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(720): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(727): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(730): warning C4806: '==' : unsafe operation: no value of type 'bool' promoted to type 'int' can equal the given constant
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(748): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(767): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(799): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(821): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(859): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(898): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(917): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(642): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(656): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(691): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(702): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(722): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(731): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(733): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(795): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(813): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(826): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(833): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(836): warning C4806: '==' : unsafe operation: no value of type 'bool' promoted to type 'int' can equal the given constant
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(854): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(867): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(879): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(904): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(936): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(958): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(996): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(1035): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(1054): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kenneysp1\onedrive - grove city college\documents\hanabi\hanabi\player.h(606): warning C4715: 'Player::ask' : not all control paths return a value
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Hanabi\Debug\Hanabi.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Hanabi\Debug\Hanabi.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\kenneysp1\OneDrive - Grove City College\Documents\Hanabi\Debug\Hanabi.lib" /MACHINE:X86 Debug\Hanabi.obj
          Debug\stdafx.obj
@@ -43,4 +52,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.95
+Time Elapsed 00:00:02.21

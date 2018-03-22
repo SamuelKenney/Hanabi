@@ -62,11 +62,16 @@ protected:
 	int chooseDiscard(std::map<int, std::map<int, std::list<int>>> hand, bool uncertain = false);
 	int choosePlay(std::map<int, std::map<int, std::list<int>>> hand, bool uncertain = false);
 	int predictBadPlay();
+	int predictBadPlayWithNoNumber();
 	bool numberCanBePlayed(int n);
 	int getCardColor(std::map<int, std::map<int, std::list<int>>> hand, int index);
 	int getCardNumber(std::map<int, std::map<int, std::list<int>>> hand, int index);
 	int getPlayableCard(std::map<int, std::map<int, std::list<int>>> hand);
 	int getCleanNumberHint();
+
+	int forced_discard;
+
+	bool alreadyOnBoad(Card c);
 
 	vector<std::pair<bool, bool>> hintedAt;
 	vector<std::pair<bool, bool>> playerHintedAtStored;
@@ -136,6 +141,8 @@ Player::Player()
 	playerHintedAtStored.resize(5);
 
 	turns = 0;
+
+	forced_discard = 0;
 }
 
 Player::Player(const Player& p)
@@ -153,6 +160,7 @@ Player::Player(const Player& p)
 	pastNumberHintMoves = p.pastNumberHintMoves;
 
 	turns = p.turns;
+	forced_discard = p.forced_discard;
 }
 
 void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card> oHand, int deckSize)
@@ -274,7 +282,7 @@ void Player::tell(Event* e, vector<int> board, int hints, int fuses, vector<Card
 			if (hintedAt[de->position].second == false)
 				//removePossibilityFromHand(playerHand, de->c);
 
-					removeCardFromHand(partnerHand, de->position);
+			removeCardFromHand(partnerHand, de->position);
 			if(de->position == 0){
 				std::cout << "Zero" << std::endl;
 			}
@@ -349,6 +357,15 @@ Event* Player::ask()
 	// needs to be called every time to update values based on hints
 	//playerHintedAt();
 
+	if (hints < 8) {
+		int c = chooseDiscard(playerHand);
+		if (c != -1) { // if there is a good guaranteed card to get rid of, do it
+			std::cout << "Good Discard" << std::endl;
+			DiscardEvent* discardEvent = new DiscardEvent(c);
+			return discardEvent;
+		}
+	}
+
 	turns++;
 
 	bool hint = true;
@@ -371,15 +388,6 @@ Event* Player::ask()
 		}
 	}
 
-	if (hints < 8) {
-		int c = chooseDiscard(playerHand);
-		if (c != -1) { // if there is a good guaranteed card to get rid of, do it
-			std::cout << "Good Discard" << std::endl;
-			DiscardEvent* discardEvent = new DiscardEvent(c);
-			return discardEvent;
-		}
-	}
-
 	// Clean Hint: No bad cards marked
 	int clean = getCleanNumberHint();
 	if (clean != -1) {
@@ -391,6 +399,64 @@ Event* Player::ask()
 				if (oHand[j].number == oHand[clean].number)
 					hintedAt[j].second = true;
 			}
+			return numberEvent;
+		}
+	}
+
+	// If number is given, but it cannot be played, give color hint so it can be a discarded
+	int badPlay = predictBadPlay();
+	if (badPlay != -1){
+		std::cout << "Predicting bad play, need to hint color" << std::endl;
+		if (hints != 0){
+			ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[badPlay].color);
+
+			for (int j = 0; j < oHand.size(); j++)
+			{
+				if (oHand[j].color == oHand[badPlay].color)
+					hintedAt[j].first = true;
+			}
+			return colorEvent;
+		}
+	}
+
+	// TODO: Maybe if no numbers are knows, but if they were it would be bad, hint color over number
+	// If number is NOT give, and it cannot be played, give color hint so that he knows not to play
+	/*int badPlayNoNumber = predictBadPlayWithNoNumber();
+	if (badPlay != -1){
+		std::cout << "Predicting bad play without a number, need to hint color" << std::endl;
+		if (hints != 0){
+			ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[badPlay].color);
+
+			for (int j = 0; j < oHand.size(); j++)
+			{
+				if (oHand[j].color == oHand[badPlay].color)
+					hintedAt[j].first = true;
+			}
+			return colorEvent;
+		}
+	}*/
+
+	if (hints < 8) {
+		int c = chooseDiscard(playerHand);
+		if (c != -1) { // if there is a good guaranteed card to get rid of, do it
+			std::cout << "Good Discard" << std::endl;
+			DiscardEvent* discardEvent = new DiscardEvent(c);
+			return discardEvent;
+		}
+	}
+
+	for (int i = 0; i < oHand.size(); i++)
+	{
+		if (hintedAt[i].second == false && canBePlayed(oHand[i]) && hints != 0){
+			// just try to give a better hint here and there
+			NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), oHand[i].number);
+			for (int j = 0; j < oHand.size(); j++)
+			{
+			if (oHand[j].number == oHand[i].number)
+			hintedAt[j].second = true;
+			}
+			
+			//std::cout << "Predicting bad play of card index " << i << std::endl;
 			return numberEvent;
 		}
 	}
@@ -407,16 +473,16 @@ Event* Player::ask()
 	// TODO: predict play
 	int play = choosePlay(partnerHand, true);
 	if(play != -1)
-		std::cout << "Predicting partner to play card index " << play << std::endl;
+		//std::cout << "Predicting partner to play card index " << play << std::endl;
 	if(play != -1 && !canBePlayed(oHand[play])){
-		NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), oHand[play].number);
+		/*NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), oHand[play].number);
 		for (int j = 0; j < oHand.size(); j++)
 		{
 			if (oHand[j].number == oHand[play].number)
 				hintedAt[j].second = true;
 		}
-
-		std::cout << "Predicting bad play of card index " << play << std::endl;
+*/
+		//std::cout << "Predicting bad play of card index " << play << std::endl;
 		//return numberEvent;
 	}
 
@@ -428,7 +494,7 @@ Event* Player::ask()
 	// Perhaps play the rarest card possible? eg play a 5 over a 3
 	// If only color known, skip it
 	c = choosePlay(playerHand, true);
-	if (c != -1) {
+	if (c != -1 && fuses != 1) {
 		std::cout << "Uncertain Play" << std::endl;
 		PlayEvent* playEvent = new PlayEvent(c); // if a real card that can be played, play it
 		return playEvent;
@@ -439,16 +505,17 @@ Event* Player::ask()
 	// Standard Play Hint
 	for (int i = 0; i < hintedAt.size(); i++)
 	{
-		int num = getCardNumber(playerHand, i);
-		if(num != -1 && hintedAt[i].second && numberCanBePlayed(num)){
+		int num = getCardNumber(partnerHand, i); // TODO: Shouldnt this be the partners hand?????? not Player hand?????
+		if(num != -1 && !hintedAt[i].second && numberCanBePlayed(num) && hints != 0){
 			std::cout << "Standard Play Hint" << std::endl;
+			std::cout << "Number: " << num << std::endl;
 			NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), num); // if there is a good, clean hint, give that over some uncertain hint
 			for (int j = 0; j < oHand.size(); j++)
 			{
 				if (oHand[j].number == num)
 					hintedAt[j].second = true;
 			}
-			return numberEvent;
+			//return numberEvent;
 		}
 	}
 
@@ -476,7 +543,7 @@ Event* Player::ask()
 		for (int i = 0; i < hintedAt.size(); i++)
 		{
 			// If we have hinted at this card's number (So high chance of a play hint), hint at its color bc we have no need for more hints
-			if (oHand[i].number == 5){
+			if (oHand[i].number == 5 && hintedAt[i].first != true && hints != 0){
 				std::cout << "5 Hint" << std::endl;
 				ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[i].color);
 
@@ -493,11 +560,49 @@ Event* Player::ask()
 
 	} // Otherwise, discard what we have to
 
-	//5 Discard
-	std::cout << "Forced Discard" << std::endl;
-	DiscardEvent* discardEvent = new DiscardEvent(chooseDiscard(playerHand, true));
-	return discardEvent;
+	// if discarding a lot, just get some hints on the board
+	if (forced_discard >= 2 && hints != 0){
+		forced_discard--;
+		for (int i = 0; i < hintedAt.size(); i++)
+		{
+			// If we have hinted at this card's number (So high chance of a play hint), hint at its color bc we have no need for more hints
+			if (hintedAt[i].second != true && hints != 0){
+				std::cout << "Too many discards Number hint" << std::endl;
+				NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), oHand[i].number);
+				for (int j = 0; j < oHand.size(); j++)
+				{
+					if (oHand[j].number == oHand[i].number)
+						hintedAt[j].second = true;
+				}
+				return numberEvent;
+			} else if (hintedAt[i].first != true && hints != 0){
+				std::cout << "Too many discards Color hint" << std::endl;
+				ColorHintEvent* colorEvent = new ColorHintEvent(vector<int>(), oHand[i].color);
 
+				for (int j = 0; j < oHand.size(); j++)
+				{
+					if (oHand[j].color == oHand[i].color)
+						hintedAt[j].first = true;
+				}
+				return colorEvent;
+			} else {
+				std::cout << "RANDOM HINT" << std::endl;
+				NumberHintEvent* numberEvent = new NumberHintEvent(vector<int>(), oHand[i].number);
+				for (int j = 0; j < oHand.size(); j++)
+				{
+					if (oHand[j].number == oHand[i].number)
+						hintedAt[j].second = true;
+				}
+				return numberEvent;
+			}
+		}
+	} else {
+		//5 Discard
+		forced_discard++;
+		std::cout << "Forced Discard" << std::endl;
+		DiscardEvent* discardEvent = new DiscardEvent(chooseDiscard(playerHand, true));
+		return discardEvent;
+	}
 }
 
 void Player::removePossibilityFromHand(std::map<int, std::map<int, std::list<int>>> &hand, Card c)
@@ -541,8 +646,8 @@ void Player::setCardHandColor(std::map<int, std::map<int, std::list<int>>> &hand
 		if (colorIndex != color) {
 			hand.at(cardIndex).at(colorIndex).clear();
 		}
-		playerHintedAtStored[colorIndex].first = true; // hand at this position has been hinted a number
 	}
+	playerHintedAtStored[cardIndex].first = true; // hand at this position has been hinted a number
 }
 
 void Player::setCardHandNumber(std::map<int, std::map<int, std::list<int>>> &hand, int cardIndex, int number)
@@ -741,7 +846,7 @@ int Player::chooseDiscard(std::map<int, std::map<int, std::list<int>>> hand, boo
 /// Returns -1 if there is no play to be made
 int Player::choosePlay(std::map<int, std::map<int, std::list<int>>> hand, bool uncertain) {
 	int cardIndex = getPlayableCard(hand);
-	if (cardIndex != -1) { // if its a real card
+	if (cardIndex != -1 && playerHintedAtStored[cardIndex].first && playerHintedAtStored[cardIndex].second) { // if its a real card
 		return cardIndex;
 	}
 
@@ -760,10 +865,33 @@ int Player::choosePlay(std::map<int, std::map<int, std::list<int>>> hand, bool u
 
 int Player::predictBadPlay(){
 	for(int cardIndex = 0; cardIndex < hintedAt.size(); cardIndex++){
-		if(!hintedAt[cardIndex].first && hintedAt[cardIndex].second && !canBePlayed(oHand[cardIndex])){
+		// TODO: need to make it so that this will only run if it is a green 3 and there is a blue 2
+		//if(!hintedAt[cardIndex].first && hintedAt[cardIndex].second && !canBePlayed(oHand[cardIndex])){ // too broad, this will grab a white 4 even if no white three
+		if(!hintedAt[cardIndex].first && hintedAt[cardIndex].second && alreadyOnBoad(oHand[cardIndex])){
 			return cardIndex;
 		}
 	}
+	return -1;
+}
+
+int Player::predictBadPlayWithNoNumber(){
+	// if no number given, but if number WAS given it would be a bad play
+	for(int cardIndex = 0; cardIndex < hintedAt.size(); cardIndex++){
+		if(!hintedAt[cardIndex].first && !hintedAt[cardIndex].second && alreadyOnBoad(oHand[cardIndex])){
+			return cardIndex;
+		}
+	}
+	return -1;
+
+}
+
+/// Returns true if already on the board 
+bool Player::alreadyOnBoad(Card c){ 
+
+	if (c.number <= tableau[c.color]) // if it has already been played
+		return true;
+	return false;
+
 }
 
 /// Returns the color of the card from the hand if it is definite, returns -1 otherwise
