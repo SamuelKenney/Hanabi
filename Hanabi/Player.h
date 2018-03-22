@@ -493,6 +493,7 @@ Event* Player::ask()
 	// If number known & playable, play it
 	// Perhaps play the rarest card possible? eg play a 5 over a 3
 	// If only color known, skip it
+	// Do to, need a better check on uncertain play
 	c = choosePlay(playerHand, true);
 	if (c != -1 && fuses != 1) {
 		std::cout << "Uncertain Play" << std::endl;
@@ -850,13 +851,27 @@ int Player::choosePlay(std::map<int, std::map<int, std::list<int>>> hand, bool u
 		return cardIndex;
 	}
 
+	int counter = 0;
 	if(uncertain){
 		for (int i = 0; i < playerHand.size(); i++)
 		{
 			int num = getCardNumber(playerHand, i);
+			// If there are 3 or more on the table that have the same number and are uncertain, do not play
 			if (numberCanBePlayed(num) && getCardColor(playerHand, i) == -1){
-				return i;
+				counter++;
 			}
+		}
+		if (counter < 3){
+			for (int i = 0; i < playerHand.size(); i++)
+			{
+				int num = getCardNumber(playerHand, i);
+				// Already have check against playing with too many on the board, then you can return the first one you find
+				if (numberCanBePlayed(num) && getCardColor(playerHand, i) == -1){
+					return i;
+				}
+			}
+		} else {
+			return -1;
 		}
 	}
 
